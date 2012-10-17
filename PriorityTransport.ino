@@ -16,7 +16,7 @@ int rfid[1] = {0x0};
 
 // PN5324
 #define IRQ   (2)
-#define RESET (3)  // Not connected by default on the NFC Shield
+#define RESET (3)
 
 Adafruit_NFCShield_I2C nfc(IRQ, RESET);
 
