@@ -95,7 +95,7 @@ void gprs_perform() {
   
   // DATA_LENGTH = N_GPS*(26+6*2+5) + N_RFID*(7+5);
         
-  //String string = String(DATA_LENGTH, DEC) + "\r\n";
+  String string;
   for(k=0;k<N_GPS;k++) 
   {
     string += "latitude"+String(k+1, DEC)+"="+String(latitude[k], DEC)+"&longitude"+String(k+1, DEC)+"="+String(longitude[k], DEC)+"&time"+String(k+1, DEC)+"="+String(time[k], DEC);
@@ -112,7 +112,7 @@ void gprs_perform() {
     {
       char buff[string.length()+1];
       String lengthed = String(DATA_LENGTH, DEC) + "\r\n\r\n";
-      lengthed.toCharArray(buff,string.length()+1);
+      lengthed.toCharArray(buff,lengthed.length()+1);
       start1:
       modem.send(buff);
       str = readterminal();
