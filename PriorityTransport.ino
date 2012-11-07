@@ -5,6 +5,7 @@
 
 #define N_GPS 5
 #define N_RFID 1
+int DATA_SENT=0;
 
 // Data Structures
 long latitude[5] = {1};
@@ -63,14 +64,27 @@ void setup(void) {
   Serial.println("Started GM865");
 }
 
+char* readterminal()
+{
+  char* check = (char*)malloc(sizeof(char)*10);
+  int x=0;
+  while(Serial3.available())
+  {
+    check[x] = Serial3.read();
+    x++;
+  }
+  return check;
+}
+
 void gprs_perform() {
-  int k,j;
+  int x=0,k,j;
   char buf[100];
   byte i = 0;
   String string;
   modem.initGPRS();                   // setup of GPRS context
   modem.enableGPRS();  				 // switch GPRS on
   Serial.println("Connected to Server");
+  //Serial.read(buf, 0, 16);
   modem.openHTTP("www.utkarshsins.com");    // open a socket
   Serial.println("sending request ...");
   modem.send("POST /priority/arduino.php HTTP/1.1\r\n"); // search server for the corresponding request
@@ -78,30 +92,63 @@ void gprs_perform() {
   modem.send("User-Agent: HTTPTool/1.1\r\n");
   modem.send("Content-Type: application/x-www-form-urlencoded\r\n");
   modem.send("Content-Length: ");
+  
   // DATA_LENGTH = N_GPS*(26+6*2+5) + N_RFID*(7+5);
         
   //String string = String(DATA_LENGTH, DEC) + "\r\n";
   for(k=0;k<N_GPS;k++) 
   {
-    string = "latitude"+String(k+1, DEC)+"="+String(latitude[k], DEC)+"&longitude"+String(k+1, DEC)+"="+String(longitude[k], DEC)+"&time"+String(k+1, DEC)+"="+String(time[k], DEC);
+    string += "latitude"+String(k+1, DEC)+"="+String(latitude[k], DEC)+"&longitude"+String(k+1, DEC)+"="+String(longitude[k], DEC)+"&time"+String(k+1, DEC)+"="+String(time[k], DEC);
   }
 
   for(j=0;j<N_RFID;j++) 
   {
-    string = string + "idtime"+String(j+1, DEC)+"="+String(idtime[j], DEC)+"&id"+String(j+1, DEC)+"="+String(rfid[j], DEC);
+    string += "idtime"+String(j+1, DEC)+"="+String(idtime[j], DEC)+"&id"+String(j+1, DEC)+"="+String(rfid[j], DEC);
   }
           
   {
+    char* str;
     DATA_LENGTH = string.length();
     {
       char buff[string.length()+1];
       String lengthed = String(DATA_LENGTH, DEC) + "\r\n\r\n";
       lengthed.toCharArray(buff,string.length()+1);
+      start1:
       modem.send(buff);
+      str = readterminal();
+      if(str[0]=='O' && str[1]=='K')
+      {
+        DATA_SENT=1;
+        x=0;
+      }
+      else if(str[0]=='N' && str[1]=='O' && x<10)
+      {
+        x++;
+        goto start1;
+      }
+      else()
+      {
+        setup();
+      }
     }
     char buff[string.length()+1];
     string.toCharArray(buff,string.length()+1);
+    start2:
     modem.send(buff);
+    str  = readterminal();
+    if(str[0]=='O' && str[1]=='K')
+    {
+        DATA_SENT=1;
+    }
+    else if(str[0]=='N' && str[1]=='O' && x<10)
+      {
+        x++;
+        goto start2;
+      }
+    else()
+    {
+      setup();
+    }
   }
   modem.send("\r\n");
   
@@ -110,10 +157,11 @@ void gprs_perform() {
   while (i++ < 10) 
   {                  // try to read for 10s
     modem.receive(buf);               // read from the socket, timeout 1s
+    
     if (strlen(buf) > 0) 
     {            // we received something
       Serial.print("Message from Server:"); Serial.println(buf);
-      i--;                            // reset the timeout
+      i--;                          // reset the timeout
     }
   }
 }
@@ -133,6 +181,7 @@ static int rfid_thread() {
   
   if (success) {
     Serial.println("Found a card!");
+//Serial.read(buf, 0, serialPort.BytesToRead);
     Serial.print("UID Length: ");Serial.print(uidLength, DEC);Serial.println(" bytes");
     Serial.print("UID Value: ");
     for (uint8_t i=0; i < uidLength; i++) 
