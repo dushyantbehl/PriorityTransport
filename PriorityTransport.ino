@@ -80,7 +80,7 @@ void gprs_perform() {
   int x=0,k,j;
   char buf[100];
   byte i = 0;
-  String string;
+  String string = "";
   modem.initGPRS();                   // setup of GPRS context
   modem.enableGPRS();  				 // switch GPRS on
   Serial.println("Connected to Server");
