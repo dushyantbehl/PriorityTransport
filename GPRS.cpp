@@ -16,10 +16,8 @@ GPRS::GPRS(HardwareSerial *modemPort, char *pin)
                 ATsetupcommand[4] = "AT+FLO=0";
                 ATsetupcommand[5] = "AT+CGDCONT=1,\"IP\",\"airtelgprs.com\"";
                 ATsetupcommand[6] = "AT#GPRS=1";
-                
                 ATsendcommand[0] = "AT#SKTD=0,80,\"www.utkarshsins.com\",0,0\r";
                 ATsendcommand[1] = "POST /priority/arduino.php HTTP/1.1\r\nHOST: www.utkarshsins.com\r\nUser-Agent: HTTPTool/1.1\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ";
-	
 	}
 
 boolean	GPRS::checktimeout(long timeout1)
@@ -52,11 +50,11 @@ void	GPRS::setup()
 	{
 		if(waiting==OFF)
 		{
-			char buf[BUF_LENGTH];
-                        requestModem(ATsetupcommand[ATindex], 1000, true, buf);
+			//char buf[BUF_LENGTH];
+                        requestModem(ATsetupcommand[ATindex], 1000, true);
 			timestart = millis();
 			waiting = ON;
-			timeout = 5000;
+			timeout = setuptimeout;
                         if(ATindex == 4)
 			Serial.println("Started GM865");
                         if(ATindex<6)
@@ -80,7 +78,7 @@ void	GPRS::setup()
 					gprsstate = setupstate;
 					ATindex=0;
 					waiting=OFF;
-					timeout = 5000;
+					timeout = setuptimeout;
 					timestart=0;
 				}
 			}
@@ -94,10 +92,11 @@ void	GPRS::send()
 	{
 		if(waiting==OFF)
 		{
-			char buf[BUF_LENGTH];
-                        requestModem(ATsendcommand[ATindex], 1000, true, buf);
+			//char buf[BUF_LENGTH];
+			requestModem(ATsendcommand[ATindex], 1000, true);
 			timestart = millis();
 			waiting = ON;
+<<<<<<< HEAD
 			timeout = 5000;
                         if(ATindex==0)
                         ATindex++;
@@ -133,6 +132,42 @@ void	GPRS::send()
                             gprsstate = receivestate;
                             ATindex = 0;
                         } 
+=======
+			timeout = sendtimeout;
+				if(ATindex==0)
+					ATindex++;
+				else if(ATindex == 1)
+				{
+					Serial.println("sending request ...");
+					String string = "";
+					char* str;
+					int k,j;
+					for(k=0;k<N_GPS;k++) 
+					{
+						string += "latitude"+String(k+1, DEC)+"="+String(latitude[k], DEC)+"&longitude"+String(k+1, DEC)+"="+String(longitude[k], DEC)+"&time"+String(k+1, DEC)+"="+String(time[k], DEC);
+					}
+					for(j=0;j<N_RFID;j++) 
+					{
+						string += "idtime"+String(j+1, DEC)+"="+String(idtime[j], DEC)+"&id"+String(j+1, DEC)+"="+String(rfid[j], DEC);
+					}
+					int DATA_LENGTH = string.length();
+					{
+						char buff[string.length()+1];
+						String lengthed = String(DATA_LENGTH, DEC) + "\r\n\r\n";
+						lengthed.toCharArray(buff,lengthed.length()+1);
+						modempin->print(buff);
+						Serial.println(buff);
+					}
+					char buff[string.length()+1];
+					string.toCharArray(buff,string.length()+1);
+					modempin->print(buff);
+					Serial.println(buff);
+					modempin->print("\r\n");
+					Serial.println("Request Sent.");
+					gprsstate = receivestate;
+					ATindex = 0;
+				}
+>>>>>>> a91189f0f5fd62792c0261b057ea0316fc954559
 			
 		}
 		else
@@ -146,7 +181,7 @@ void	GPRS::send()
 					gprsstate = setupstate;
 					ATindex=0;
 					waiting=OFF;
-					timeout = 5000;
+					timeout = sendtimeout;
 					timestart=0;
 				}
 			}
@@ -157,49 +192,38 @@ void	GPRS::send()
 
 void	GPRS::receive()
 	{
-		if(waiting==OFF)
+		if(waiting == ON)
 		{
 			char buf[BUF_LENGTH];
-         		timestart = millis();
-			waiting = ON;
-			timeout = 5000;
-                        /*Serial.println("receiving ...");
-                        while (i++ < 10) 
-                        {                  // try to read for 10s
-                              modem.receive(buf);               // read from the socket, timeout 1s
-    
-                              if (strlen(buf) > 0) 
-                              {            // we received something
-                              Serial.print("Message from Server:"); 
-                              Serial.println(buf);
-                              i--;                          // reset the timeout
-                              }
-                        }*/
 			
+			timeout = receivetimeout;
+			long time = millis();
+			if(time-timestart <= timeout)
+			{
+				while(modempin->available)
+				{
+					buf[x] = modempin->read();
+					x++;
+				}
+				if(strlen(buf) > 0)
+				{
+					Serial.print("Message from Server:");
+					Serial.println(buf);
+					state = waitingtosendstate;
+				}
+			}
 		}
 		else
 		{
-			if(Serial3.available())
-			{
-				if(readterminal())
-					waiting = OFF;
-				else if(!checktimeout(timeout) || !readterminal())
-				{
-					gprsstate = setupstate;
-					ATindex=0;
-					waiting=OFF;
-					timeout = 5000;
-					timestart=0;
-				}
-			}
-			
+			waiting = ON;
+			timestart = millis();
 		}
 	}
 
 	
 
 
-void GPRS::requestModem(const String command, uint16_t timeout, boolean check, char *buf)
+void GPRS::requestModem(const String command, uint16_t timeout, boolean check)
 {
 			
  // byte count = 0;
@@ -240,14 +264,19 @@ void	GPRS::run()
 		}
 		else if(gprsstate==sendstate)
 		{
+			cycletimestart = millis();
 			send();
 		}
 		else if(gprsstate==receivestate)
 		{
 			receive();
 		}
-
-        }
+		else if(gprsstate==waitingtosendstate)
+		{
+			if(millis()-cycletimestart>=cycletimeout)
+				state = sendstate;
+		}
+	}
 
 
 /*byte  getsTimeout(char *buf, uint16_t timeout) {

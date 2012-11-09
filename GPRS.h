@@ -12,14 +12,21 @@
 #define STATE_INITIALIZED 2
 #define STATE_REGISTERED 4
 #define STATE_POSFIX 8
-#define BUF_LENGTH 100
+#define BUF_LENGTH 1000
 #define ON true
 #define OFF false
 #define N_GPS 5
 #define N_RFID 1
+<<<<<<< HEAD
 #define WAITING_TO_BOARD 0
 #define IN_THE_BUS 1
 #define DROPPED_AT_LOCATION 2
+=======
+#define setuptimeout 5000
+#define sendtimeout 5000
+#define receivetimeout 5000
+#define cycletimeout 60000
+>>>>>>> a91189f0f5fd62792c0261b057ea0316fc954559
 
 long latitude[5];
 long longitude[5];
@@ -41,11 +48,9 @@ class User
     int rfid_tag[8];
 };
 
-
 class GPRS
 {
-  
-        public:
+	public:
 	GPRS(HardwareSerial *modemPort, char *pin);
 	void  requestModem(const String command, uint16_t timeout, boolean check, char *buf);
 	void run();
@@ -53,6 +58,7 @@ class GPRS
 	private:
 	int gprsstate;
 	long timestart;
+	long cycletime;
 	int timeout;
 	bool waiting;
 	HardwareSerial *modempin;
