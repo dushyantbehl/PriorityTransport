@@ -17,48 +17,36 @@
 #define OFF false
 #define N_GPS 5
 #define N_RFID 1
-<<<<<<< HEAD
-#define WAITING_TO_BOARD 0
-#define IN_THE_BUS 1
-#define DROPPED_AT_LOCATION 2
-=======
 #define setuptimeout 5000
 #define sendtimeout 5000
 #define receivetimeout 5000
 #define cycletimeout 60000
->>>>>>> a91189f0f5fd62792c0261b057ea0316fc954559
-
-long latitude[5];
-long longitude[5];
-long time[5];
-long idtime[5];
-int RFID[8];
 
 class User
 {
     public:
-    long pick_latitude[5];
-    long pick_longitude[5];
+    void parse();
+    
+    private:
+    long pick_location[5];
     long pick_time[5];
-    long drop_latitude[5];
-    long drop_longitude[5];
+    long drop_location[5];
     long drop_time[5];
     String entry_num;
-    int status;
-    int rfid_tag[8];
+    int rfid_tag[5];
 };
 
 class GPRS
 {
 	public:
 	GPRS(HardwareSerial *modemPort, char *pin);
-	void  requestModem(const String command, uint16_t timeout, boolean check, char *buf);
+	void  requestModem(const String command, uint16_t timeout, boolean check);
 	void run();
 
 	private:
 	int gprsstate;
 	long timestart;
-	long cycletime;
+	long cycletimestart;
 	int timeout;
 	bool waiting;
 	HardwareSerial *modempin;

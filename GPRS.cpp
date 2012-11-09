@@ -20,6 +20,11 @@ GPRS::GPRS(HardwareSerial *modemPort, char *pin)
                 ATsendcommand[1] = "POST /priority/arduino.php HTTP/1.1\r\nHOST: www.utkarshsins.com\r\nUser-Agent: HTTPTool/1.1\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ";
 	}
 
+void User::parse()
+{
+       
+}
+
 boolean	GPRS::checktimeout(long timeout1)
 	{
 		long time = millis();
@@ -96,7 +101,6 @@ void	GPRS::send()
 			requestModem(ATsendcommand[ATindex], 1000, true);
 			timestart = millis();
 			waiting = ON;
-<<<<<<< HEAD
 			timeout = 5000;
                         if(ATindex==0)
                         ATindex++;
@@ -132,43 +136,7 @@ void	GPRS::send()
                             gprsstate = receivestate;
                             ATindex = 0;
                         } 
-=======
 			timeout = sendtimeout;
-				if(ATindex==0)
-					ATindex++;
-				else if(ATindex == 1)
-				{
-					Serial.println("sending request ...");
-					String string = "";
-					char* str;
-					int k,j;
-					for(k=0;k<N_GPS;k++) 
-					{
-						string += "latitude"+String(k+1, DEC)+"="+String(latitude[k], DEC)+"&longitude"+String(k+1, DEC)+"="+String(longitude[k], DEC)+"&time"+String(k+1, DEC)+"="+String(time[k], DEC);
-					}
-					for(j=0;j<N_RFID;j++) 
-					{
-						string += "idtime"+String(j+1, DEC)+"="+String(idtime[j], DEC)+"&id"+String(j+1, DEC)+"="+String(rfid[j], DEC);
-					}
-					int DATA_LENGTH = string.length();
-					{
-						char buff[string.length()+1];
-						String lengthed = String(DATA_LENGTH, DEC) + "\r\n\r\n";
-						lengthed.toCharArray(buff,lengthed.length()+1);
-						modempin->print(buff);
-						Serial.println(buff);
-					}
-					char buff[string.length()+1];
-					string.toCharArray(buff,string.length()+1);
-					modempin->print(buff);
-					Serial.println(buff);
-					modempin->print("\r\n");
-					Serial.println("Request Sent.");
-					gprsstate = receivestate;
-					ATindex = 0;
-				}
->>>>>>> a91189f0f5fd62792c0261b057ea0316fc954559
-			
 		}
 		else
 		{
@@ -198,9 +166,10 @@ void	GPRS::receive()
 			
 			timeout = receivetimeout;
 			long time = millis();
+                        int x=0;
 			if(time-timestart <= timeout)
 			{
-				while(modempin->available)
+				while(modempin->available())
 				{
 					buf[x] = modempin->read();
 					x++;
