@@ -1,19 +1,13 @@
 #include <Wire.h>
 
 #include "RFID.h"
-#include "GM865.h"
+#include "GPRS.h"
 
 #define N_GPS 5
 #define N_RFID 1
 int DATA_SENT=0;
 
 // Data Structures
-long latitude[5] = {1};
-long longitude[5] = {2};
-long time[5] = {3};
-
-long idtime[1] = {12345};
-int rfid[1] = {0x0};
 
 // PN5324
 #define IRQ   (2)
@@ -29,7 +23,7 @@ boolean validate = true;
 // GM865
 int onPin = 22;                      // pin to toggle the modem's on/off
 char PIN[1] = "";                // replace this with your PIN
-Position position;                   // stores the GPS position
+//Position position;                   // stores the GPS position
 GPRS modem(&Serial3, PIN);   // modem is connected to Serial3
 char cmd;                            // command read from terminal
 static long TIME_DELAY1 = 60000;     //Time Delay for GPRS thread
@@ -64,17 +58,6 @@ void setup(void) {
   Serial.println("Started GM865");
 }
 
-char* readterminal()
-{
-  char* check = (char*)malloc(sizeof(char)*10);
-  int x=0;
-  while(Serial3.available())
-  {
-    check[x] = Serial3.read();
-    x++;
-  }
-  return check;
-}
 
 void gprs_perform() {
   int x=0,k,j;
@@ -105,52 +88,20 @@ void gprs_perform() {
   {
     string += "idtime"+String(j+1, DEC)+"="+String(idtime[j], DEC)+"&id"+String(j+1, DEC)+"="+String(rfid[j], DEC);
   }
-          
-  {
+       
     char* str;
     DATA_LENGTH = string.length();
     {
       char buff[string.length()+1];
       String lengthed = String(DATA_LENGTH, DEC) + "\r\n\r\n";
       lengthed.toCharArray(buff,lengthed.length()+1);
-      start1:
       modem.send(buff);
-      str = readterminal();
-      if(str[0]=='O' && str[1]=='K')
-      {
-        DATA_SENT=1;
-        x=0;
-      }
-      else if(str[0]=='N' && str[1]=='O' && x<10)
-      {
-        x++;
-        goto start1;
-      }
-      else
-      {
-        setup();
-      }
     }
     char buff[string.length()+1];
     string.toCharArray(buff,string.length()+1);
-    start2:
     modem.send(buff);
-    str  = readterminal();
-    if(str[0]=='O' && str[1]=='K')
-    {
-        DATA_SENT=1;
-    }
-    else if(str[0]=='N' && str[1]=='O' && x<10)
-      {
-        x++;
-        goto start2;
-      }
-    else
-    {
-      setup();
-    }
-  }
-  modem.send("\r\n");
+   
+   modem.send("\r\n");
   
   
   Serial.println("receiving ...");
