@@ -80,7 +80,7 @@ void gprs_perform() {
   int x=0,k,j;
   char buf[100];
   byte i = 0;
-  String string;
+  String string = "";
   modem.initGPRS();                   // setup of GPRS context
   modem.enableGPRS();  				 // switch GPRS on
   Serial.println("Connected to Server");
@@ -95,7 +95,7 @@ void gprs_perform() {
   
   // DATA_LENGTH = N_GPS*(26+6*2+5) + N_RFID*(7+5);
         
-  String string;
+ // String string;
   for(k=0;k<N_GPS;k++) 
   {
     string += "latitude"+String(k+1, DEC)+"="+String(latitude[k], DEC)+"&longitude"+String(k+1, DEC)+"="+String(longitude[k], DEC)+"&time"+String(k+1, DEC)+"="+String(time[k], DEC);
@@ -126,7 +126,7 @@ void gprs_perform() {
         x++;
         goto start1;
       }
-      else()
+      else
       {
         setup();
       }
@@ -145,7 +145,7 @@ void gprs_perform() {
         x++;
         goto start2;
       }
-    else()
+    else
     {
       setup();
     }
