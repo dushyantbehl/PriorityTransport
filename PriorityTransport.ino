@@ -3,10 +3,6 @@
 #include "RFID.h"
 #include "GPRS.h"
 
-#define N_GPS 5
-#define N_RFID 1
-int DATA_SENT=0;
-
 // Data Structures
 
 // PN5324
@@ -20,6 +16,8 @@ const int buzzerpin = 12;
 #define BEEP_PULSE_LONG 400
 boolean validate = true;
 
+int rfid[8];
+
 // GM865
 int onPin = 22;                      // pin to toggle the modem's on/off
 char PIN[1] = "";                // replace this with your PIN
@@ -27,20 +25,14 @@ char PIN[1] = "";                // replace this with your PIN
 GPRS modem(&Serial3, PIN);   // modem is connected to Serial3
 char cmd;                            // command read from terminal
 static long TIME_DELAY1 = 60000;     //Time Delay for GPRS thread
-int DATA_LENGTH;
 
-void setup(void) {
+/*void setup(void) {
   Serial.begin(115200);
 
 
   // Setup - PN532
   nfc.begin();
   uint32_t versiondata = nfc.getFirmwareVersion();
-  if (! versiondata) {
-    Serial.println("Didn't find PN532");
-    while (1);
-  }  
-  Serial.println("Starting PN5432");
   nfc.setPassiveActivationRetries(0xFF);  // Number of retry attempts 
   nfc.SAMConfig();                        // configure board to read RFID tags
   pinMode(buzzerpin, OUTPUT);
@@ -56,10 +48,10 @@ void setup(void) {
     modem.checkNetwork();             // check the network availability
   }
   Serial.println("Started GM865");
-}
+}*/
 
 
-void gprs_perform() {
+/*void gprs_perform() {
   int x=0,k,j;
   char buf[100];
   byte i = 0;
@@ -115,7 +107,7 @@ void gprs_perform() {
       i--;                          // reset the timeout
     }
   }
-}
+}*/
 
 static int rfid_thread() {
   boolean success;
@@ -169,10 +161,11 @@ static int rfid_thread() {
     // PN532 probably timed out waiting for a card
     Serial.println("Timed out waiting for a card");
   }
-  gprs_perform();
+  //gprs_perform();
 }
     
 
 void loop(void) {
   rfid_thread();
+  modem.run();
 }

@@ -17,13 +17,29 @@
 #define OFF false
 #define N_GPS 5
 #define N_RFID 1
+#define WAITING_TO_BOARD 0
+#define IN_THE_BUS 1
+#define DROPPED_AT_LOCATION 2
 
-long latitude[5] = {1};
-long longitude[5] = {2};
-long time[5] = {3};
+long latitude[5];
+long longitude[5];
+long time[5];
+long idtime[5];
+int RFID[8];
 
-long idtime[1] = {12345};
-int rfid[1] = {0x0};
+class User
+{
+    public:
+    long pick_latitude[5];
+    long pick_longitude[5];
+    long pick_time[5];
+    long drop_latitude[5];
+    long drop_longitude[5];
+    long drop_time[5];
+    String entry_num;
+    int status;
+    int rfid_tag[8];
+};
 
 
 class GPRS
@@ -49,9 +65,7 @@ class GPRS
 	boolean readterminal();
 	void setup();
         void send();
-        void receive();
-	
-	
+        void receive();	
 };
 
 #endif

@@ -1,5 +1,7 @@
 #include "GPRS.h"
 
+
+
 GPRS::GPRS(HardwareSerial *modemPort, char *pin)
 	{
 		modempin = modemPort;
@@ -111,7 +113,7 @@ void	GPRS::send()
                              }
                             for(j=0;j<N_RFID;j++) 
                              {
-                                string += "idtime"+String(j+1, DEC)+"="+String(idtime[j], DEC)+"&id"+String(j+1, DEC)+"="+String(rfid[j], DEC);
+                                string += "idtime"+String(j+1, DEC)+"="+String(idtime[j], DEC)+"&id"+String(j+1, DEC)+"="+String(RFID[j], DEC);
                              }
                              int DATA_LENGTH = string.length();
                              {
