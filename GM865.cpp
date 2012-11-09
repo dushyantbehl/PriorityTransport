@@ -17,7 +17,6 @@ GM865::GM865(HardwareSerial *modemPort, byte onOffPin, char *pin) {
   strcpy(this->pin, pin);
 }
 
-
 boolean GM865::isOn() {
   return (state & STATE_ON);
 }

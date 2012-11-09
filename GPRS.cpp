@@ -1,138 +1,87 @@
-#define setupstate 0
-#define sendstate 1
-#define receivestate 2
-#define idle false
-#define hold true
-#define STATE_NONE 0
-#define STATE_ON 1
-#define STATE_INITIALIZED 2
-#define STATE_REGISTERED 4
-#define STATE_POSFIX 8
-#define BUF_LENGTH 100
-#define ON true
-#define OFF false
+#include "GPRS.h"
 
-class GPRS
-{
-	private:
-	bool idlehold=idle;
-	int gprsstate=0;
-	long timestart=0;
-	int timeout = 5;
-	bool waiting = OFF;
-	HardwareSerial *modem;
-	byte onOffPin;
-	char pin[5];
-	byte state;
-	int ATindex=0;
-	int commanditerator = 0;
-	String ATcommand[] = {"AT",""}
-	bool timeout(long timeout)
+GPRS::GPRS(HardwareSerial *modemPort, char *pin)
 	{
-		long time = hour()*10000+minute()*100+second();
-		timedifference = time-timestart
-		if(timedifference<=timeout)
+		modempin = modemPort;
+		modempin->begin(19200);
+		strcpy(this->pin, pin);
+		waiting = OFF;
+		//ATindex = 0;ATcommand[4][10] = {"AT","AT+IPR=19200","AT+CMEE=2","AT+CREG?"};
+	}
+
+boolean	GPRS::checktimeout(long timeout1)
+	{
+		long time = millis();
+		int timedifference = time-timestart;
+		if(timedifference<=timeout1)
 			return true;
 		else
 			return false;
 	}
 	
-	void setup()
+boolean	GPRS::readterminal()
 	{
-		if(idlehold==idle)
+		//char* check = (char*)malloc(sizeof(char)*10);
+		char check[10];
+		int x=0;
+		while(modempin->available())
 		{
-			if(ATindex==0)
+			check[x] = modempin->read();
+			x++;
+		}
+		if(check[0]=='O' && check[1]=='K')
+			return true;
+		else if(check[0]=='N' && check[1]=='O')
+			return false;
+		else
+			return true;
+	}
+	
+void	GPRS::setup()
+	{
+		if(waiting==OFF)
+		{
+			char buf[BUF_LENGTH];requestModem(ATcommand[ATindex], 1000, true, buf);
+			timestart = millis();
+			waiting = ON;
+			timeout = 5000;
+			Serial.println("Started GM865");
+			ATindex++;
+			
+		}
+		else
+		{
+			if(Serial3.available())
 			{
-				if(waiting==OFF)
+				if(readterminal())
+					waiting = OFF;
+				else if(!checktimeout(timeout) || !readterminal())
 				{
-					if(commanditerator==0)
-					{
-						switchOn();
-						commanditerator++;
-						waiting = ON;
-						timeout = 2;
-					}
+					gprsstate = setupstate;
+					ATindex=0;
+					waiting=OFF;
+					timeout = 5000;
+					timestart=0;
 				}
-				init();
-				while(!isRegistered())
-				{
-					delay(1000);
-					checkNetwork();             // check the network availability
-				}
-				Serial.println("Started GM865");
 			}
 			
 		}
 	}
 	
-	public:
-	GPRS(HardwareSerial *modemPort, byte onOffPin, char *pin)
-	{
-		state = STATE_NONE;
-		modem = modemPort;
-		modem->begin(19200);
-		this->onOffPin = onOffPin;
-		pinMode(onOffPin, OUTPUT);
-		strcpy(this->pin, pin);
-	}
 	
-	boolean isOn()
-	{
-		return (state & STATE_ON);
-	}
-	
-	boolean isInitialized()
-	{
-		return (state & STATE_INITIALIZED);
-	}
-	
-	boolean isRegistered() {
-  return (state & STATE_REGISTERED);
-}
 
 
-boolean isPosFixed() {
-  return (state & STATE_POSFIX);
-}
-
-void  switchOn() {
-  Serial.println("switching on");
-  if (!isOn()) {
-    switchModem();
-    state |= STATE_ON;
-  }
-  Serial.println("done");
-}
-
-
-void  switchOff() {
-  Serial.println("switching off");
-  if (isOn()) {
-    switchModem();
-    state &= ~STATE_ON;
-  }
-  Serial.println("done");
-}
-
-
-void  switchModem() {
-  digitalWrite(onOffPin, HIGH);
-  waiting = ON;
-  digitalWrite(onOffPin, LOW);
-  delay(1000);
-}
-
-
-byte  requestModem(const char *command, uint16_t timeout, boolean check, char *buf) {
+void GPRS::requestModem(const char *command, uint16_t timeout, boolean check, char *buf)
+{
 			
   byte count = 0;
   char *found = 0;
   
   *buf = 0;
   Serial.println(command);
-  modem->print(command);
-  modem->print('\r');
-  count = getsTimeout(buf, timeout);
+  modempin->print(command);
+  modempin->print('\r');
+  /*count = getsTimeout(buf, timeout);
   if (count) {
     if (check) {
       found = strstr(buf, "\r\nOK\r\n");
@@ -151,12 +100,12 @@ byte  requestModem(const char *command, uint16_t timeout, boolean check, char *b
   }
   else {
     Serial.println("->no respone");
-  }
-  return count;
+  }*/
+  //return count;
 }
 
 
-byte  getsTimeout(char *buf, uint16_t timeout) {
+/*byte  getsTimeout(char *buf, uint16_t timeout) {
   byte count = 0;
   long timeIsOut = 0;
   char c;
@@ -175,14 +124,13 @@ byte  getsTimeout(char *buf, uint16_t timeout) {
     count++;
   }
   return count;
-}
+}*/
 
-
-void  init() {
+/*void  init() {
   Serial.println("initializing modem ...");
   char buf[BUF_LENGTH];
-  char cmdbuf[30] = "AT+CPIN=";
-  strcat(cmdbuf, pin);
+  //char cmdbuf[30] = "AT+CPIN=";
+  //strcat(cmdbuf, pin);
   requestModem("AT", 1000, true, buf);
   requestModem("AT+IPR=19200", 1000, true, buf);
   requestModem("AT+CMEE=2", 1000, true, buf);
@@ -190,9 +138,9 @@ void  init() {
   state |= STATE_INITIALIZED;
   Serial.println("done");
 }
+*/
 
-
-void  version() {
+/*void  version() {
   char buf[BUF_LENGTH];
   Serial.println("version info ...");
   requestModem("AT+GMI", 1000, false, buf);
@@ -217,9 +165,9 @@ void  sendSMS(char *number, char *message) {
   Serial.println(buf);
   Serial.println("done");
 }
+*/
 
-
-void  checkNetwork() {
+/*void  checkNetwork() {
   char buf[BUF_LENGTH];
   char result;
   Serial.println("checking network ...");
@@ -232,7 +180,7 @@ void  checkNetwork() {
     state &= ~STATE_REGISTERED;
   }
   Serial.println("done");
-}
+}*/
 
 
 /*
@@ -241,7 +189,7 @@ void  checkNetwork() {
  * o2
  *   internet, <>, <>
  */
-void  initGPRS() {
+/*void  initGPRS() {
   char buf[BUF_LENGTH];
   Serial.println("initializing GPRS ...");
   requestModem("AT+FLO=0", 1000, false, buf);
@@ -291,8 +239,8 @@ boolean  openHTTP(char *domain) {
   }
   return (connect);
 }
-
-
+*/
+/*
 void  send(char *buf) {
     Serial.print(buf);
     modem->print(buf);
@@ -302,10 +250,10 @@ void  send(char *buf) {
 char * receive(char *buf) {
   getsTimeout(buf, 1000);
   return buf;
-}
+}*/
 
 
-void  warmStartGPS() {
+/*void  warmStartGPS() {
   char buf[BUF_LENGTH];
   Serial.println("warm start GPS ...");
   requestModem("AT$GPSR=2", 1000, false, buf);
@@ -344,7 +292,7 @@ Position  getLastPosition() {
  * example:
  * $GPSACP: 120631.999,5433.9472N,00954.8768E,1.0,46.5,3,167.28,0.36,0.19,130707,11\r
  */
-void  parseGPS(char *gpsMsg, Position *pos) {
+/*void  parseGPS(char *gpsMsg, Position *pos) {
 
   char time[7];
   char lat_buf[12];
@@ -374,13 +322,13 @@ void  parseGPS(char *gpsMsg, Position *pos) {
     pos->fix = fix;
   }
 
-}
+}*/
 
 
 /*
  * Skips the string until the given char is found.
  */
-char * skip(char *str, char match) {
+/*char * skip(char *str, char match) {
   uint8_t c = 0;
   while (true) {
     c = *str++;
@@ -389,14 +337,14 @@ char * skip(char *str, char match) {
     }
   }
   return str;
-}
+}*/
 
 
 /*
  * Reads a token from the given string. Token is seperated by the 
  * given delimiter.
  */
-char * readToken(char *str, char *buf, char delimiter) {
+/*char * readToken(char *str, char *buf, char delimiter) {
   uint8_t c = 0;
   while (true) {
     c = *str++;
@@ -410,18 +358,18 @@ char * readToken(char *str, char *buf, char delimiter) {
   *buf = '\0';
   return str;
 }
-
+*/
 
 /*
  * Parse and convert the position tokens. 
  */
-void  parsePosition(Position *pos, char *lat_str, char *lon_str, char *alt_str) {
+/*void  parsePosition(Position *pos, char *lat_str, char *lon_str, char *alt_str) {
   char buf[10];
   parseDegrees(lat_str, &pos->lat_deg, &pos->lat_min);
   parseDegrees(lon_str, &pos->lon_deg, &pos->lon_min);
   readToken(alt_str, buf, '.');
   pos->alt = atol(buf);
-}
+}*/
 
 
 /*
@@ -429,7 +377,7 @@ void  parsePosition(Position *pos, char *lat_str, char *lon_str, char *alt_str) 
  * Example: 5333.9472N --> 53 degrees, 33.9472 minutes
  * converted to: 53.565786 degrees 
  */
-void  parseDegrees(char *str, int *degree, long *minutes) {
+/*void  parseDegrees(char *str, int *degree, long *minutes) {
   char buf[6];
   uint8_t c = 0;
   uint8_t i = 0;
@@ -454,10 +402,10 @@ void  parseDegrees(char *str, int *degree, long *minutes) {
   *minutes = atol(buf);
   *minutes *= 16667;
   *minutes /= 1000;
-}
+}*/
 
 	
-	void run()
+void	GPRS::run()
 	{
 		if(gprsstate==setupstate)
 		{
@@ -465,12 +413,11 @@ void  parseDegrees(char *str, int *degree, long *minutes) {
 		}
 		else if(gprsstate==sendstate)
 		{
-			send();
+			//send();
 		}
-		else if(gprssetup==recievestate)
+		else if(gprsstate==receivestate)
 		{
-			receive();
+			//receive();
 		}
-	}
-	
-}
+
+        }
