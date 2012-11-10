@@ -2,6 +2,7 @@
 #define GPRS_h
 
 #include <Wire.h>
+#include "User.h"
 #include "Arduino.h"
 #define setupstate 0
 #define sendstate 1
@@ -22,34 +23,32 @@
 #define receivetimeout 5000
 #define cycletimeout 60000
 
-class User
-{
-    public:
-    void parse();
-    
-    private:
-    long pick_location[5];
-    long pick_time[5];
-    long drop_location[5];
-    long drop_time[5];
-    String entry_num;
-    int rfid_tag[5];
-};
+
+typedef struct {
+	long latitude;
+	long longitude;
+        long timestamp;
+} GPS;
 
 class GPRS
 {
 	public:
-	GPRS(HardwareSerial *modemPort, char *pin);
+	GPRS(HardwareSerial *modemPort, char *pin, user *, GPS *);
 	void  requestModem(const String command, uint16_t timeout, boolean check);
 	void run();
 
 	private:
+
+        user * userdata;
+        GPS * gpsdata;
+        
 	int gprsstate;
 	long timestart;
 	long cycletimestart;
 	int timeout;
 	bool waiting;
 	HardwareSerial *modempin;
+        
 	char pin[5];
 	byte state;
 	int ATindex;

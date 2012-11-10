@@ -2,10 +2,12 @@
 
 
 
-GPRS::GPRS(HardwareSerial *modemPort, char *pin)
+GPRS::GPRS(HardwareSerial *modemPort, char *pin, user * users, GPS * gps)
 	{
 		modempin = modemPort;
 		modempin->begin(19200);
+                userdata = users;
+                gpsdata = gps;
 		strcpy(this->pin, pin);
 		waiting = OFF;
                 ATindex = 0;
@@ -19,11 +21,6 @@ GPRS::GPRS(HardwareSerial *modemPort, char *pin)
                 ATsendcommand[0] = "AT#SKTD=0,80,\"www.utkarshsins.com\",0,0\r";
                 ATsendcommand[1] = "POST /priority/arduino.php HTTP/1.1\r\nHOST: www.utkarshsins.com\r\nUser-Agent: HTTPTool/1.1\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ";
 	}
-
-void User::parse()
-{
-       
-}
 
 boolean	GPRS::checktimeout(long timeout1)
 	{
@@ -74,7 +71,7 @@ void	GPRS::setup()
 		}
 		else
 		{
-			if(Serial3.available())
+			if(modempin->available())
 			{
 				if(readterminal())
 					waiting = OFF;
@@ -108,15 +105,19 @@ void	GPRS::send()
                         {
 			    Serial.println("sending request ...");
                             String string = "";
-                            char* str;
                             int k,j;
                             for(k=0;k<N_GPS;k++) 
                              {
-                                string += "latitude"+String(k+1, DEC)+"="+String(latitude[k], DEC)+"&longitude"+String(k+1, DEC)+"="+String(longitude[k], DEC)+"&time"+String(k+1, DEC)+"="+String(time[k], DEC);
+                                string += "latitude"+String(k+1, DEC)+"="+String(gpsdata[k].latitude, DEC)+"&longitude"+String(k+1, DEC)+"="+String(gpsdata[k].longitude, DEC)+"&time"+String(k+1, DEC)+"="+String(gpsdata[k].timestamp, DEC);
                              }
                             for(j=0;j<N_RFID;j++) 
                              {
-                                string += "idtime"+String(j+1, DEC)+"="+String(idtime[j], DEC)+"&id"+String(j+1, DEC)+"="+String(RFID[j], DEC);
+                               // @SAURABH NOTE :  Access Users through userdata array pointer and GPS through gpsdata array pointer.
+                               //                  Iterate through all the users in userdata and check if rfidsend = true, then send, then set rfidsend = false. 
+                               //                  I have already done the gpsdata usage example in last for loop ^^.
+                               //                  FIX THIS
+                               
+                               // string += "idtime"+String(j+1, DEC)+"="+String(idtime[j], DEC)+"&id"+String(j+1, DEC)+"="+String(RFID[j], DEC);
                              }
                              int DATA_LENGTH = string.length();
                              {
@@ -140,7 +141,7 @@ void	GPRS::send()
 		}
 		else
 		{
-			if(Serial3.available())
+			if(modempin->available())
 			{
 				if(readterminal())
 					waiting = OFF;

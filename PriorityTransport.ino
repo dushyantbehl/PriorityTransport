@@ -16,17 +16,19 @@ const int buzzerpin = 12;
 #define BEEP_PULSE_LONG 400
 boolean validate = true;
 
-int rfid[8];
+user users[5];
+GPS gps[60]; 
 
 // GM865
 int onPin = 22;                      // pin to toggle the modem's on/off
 char PIN[1] = "";                // replace this with your PIN
 //Position position;                   // stores the GPS position
-GPRS modem(&Serial3, PIN);   // modem is connected to Serial3
+GPRS modem(&Serial3, PIN, users, gps);   // modem is connected to Serial3
 char cmd;                            // command read from terminal
 static long TIME_DELAY1 = 60000;     //Time Delay for GPRS thread
 
-/*void setup(void) {
+void setup(void) {
+  /*
   Serial.begin(115200);
 
 
@@ -48,7 +50,8 @@ static long TIME_DELAY1 = 60000;     //Time Delay for GPRS thread
     modem.checkNetwork();             // check the network availability
   }
   Serial.println("Started GM865");
-}*/
+  */
+}
 
 
 /*void gprs_perform() {
@@ -130,7 +133,7 @@ static int rfid_thread() {
     for (uint8_t i=0; i < uidLength; i++) 
     {
       Serial.print(" 0x");Serial.print(uid[i], HEX); 
-      rfid[0] = rfid[0] * 8 + uid[i];
+      //rfid[0] = rfid[0] * 8 + uid[i];
     }
     Serial.println("");
   
