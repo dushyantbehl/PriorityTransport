@@ -33,7 +33,7 @@ typedef struct {
 class GPRS
 {
 	public:
-	GPRS(HardwareSerial *modemPort, char *pin, user *, GPS *);
+	GPRS(HardwareSerial *modemPort, user *, GPS *);
 	void  requestModem(const String command, uint16_t timeout, boolean check);
 	void run();
 
@@ -49,7 +49,6 @@ class GPRS
 	bool waiting;
 	HardwareSerial *modempin;
         
-	char pin[5];
 	byte state;
 	int ATindex;
 	String ATsetupcommand[7];

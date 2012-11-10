@@ -1,14 +1,11 @@
 #include "GPRS.h"
 
-
-
-GPRS::GPRS(HardwareSerial *modemPort, char *pin, user * users, GPS * gps)
+GPRS::GPRS(HardwareSerial *modemPort, user * users, GPS * gps)
 	{
 		modempin = modemPort;
 		modempin->begin(19200);
                 userdata = users;
                 gpsdata = gps;
-		strcpy(this->pin, pin);
 		waiting = OFF;
                 ATindex = 0;
                 ATsetupcommand[0] = "AT";
