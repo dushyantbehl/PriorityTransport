@@ -120,7 +120,7 @@
 
 class Adafruit_NFCShield_I2C{
  public:
-  Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset);
+  Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset, int);
   void begin(void);
   
   // Generic PN532 functions
@@ -151,6 +151,7 @@ class Adafruit_NFCShield_I2C{
   static void PrintHexChar(const byte * pbtData, const uint32_t numBytes);
 
  private:
+  int buzzerpin;
   uint8_t _irq, _reset;
   uint8_t _uid[7];  // ISO14443A uid
   uint8_t _uidLen;  // uid len

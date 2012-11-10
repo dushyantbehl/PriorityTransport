@@ -9,9 +9,10 @@
 #define IRQ   (2)
 #define RESET (3)
 
-Adafruit_NFCShield_I2C nfc(IRQ, RESET);
-
 const int buzzerpin = 12;
+
+Adafruit_NFCShield_I2C nfc(IRQ, RESET, buzzerpin);
+
 #define BEEP_PULSE_SHORT 125
 #define BEEP_PULSE_LONG 400
 boolean validate = true;
@@ -20,23 +21,18 @@ user users[5];
 GPS gps[60]; 
 
 // GM865
+int onPin = 22;                      // pin to toggle the modem's on/off
+char PIN[1] = "";                // replace this with your PIN
+//Position position;                   // stores the GPS position
 GPRS modem(&Serial3, users, gps);   // modem is connected to Serial3
 char cmd;                            // command read from terminal
 static long TIME_DELAY1 = 60000;     //Time Delay for GPRS thread
 
 void setup(void) {
-  /*
+  
   Serial.begin(115200);
-
-
-  // Setup - PN532
-  nfc.begin();
-  uint32_t versiondata = nfc.getFirmwareVersion();
-  nfc.setPassiveActivationRetries(0xFF);  // Number of retry attempts 
-  nfc.SAMConfig();                        // configure board to read RFID tags
-  pinMode(buzzerpin, OUTPUT);
-  Serial.println("Started PN5432");
-
+  nfc.begin(); // Setup NFC - PN532
+  /*
   // Setup - GM865
   Serial.println("Starting GM865");
   modem.switchOn();                   // switch the modem on

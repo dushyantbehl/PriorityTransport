@@ -1,8 +1,4 @@
-#if ARDUINO >= 100
- #include "Arduino.h"
-#else
- #include "WProgram.h"
-#endif
+#include "Arduino.h"
 
 #include <Wire.h>
 
@@ -18,57 +14,30 @@ byte pn532response_firmwarevers[] = {0x00, 0xFF, 0x06, 0xFA, 0xD5, 0x03};
 #define PN532_PACKBUFFSIZ 64
 byte pn532_packetbuffer[PN532_PACKBUFFSIZ];
 
-/**************************************************************************/
-/*! 
-    @brief  Sends a single byte via I2C
-
-    @param  x    The byte to send
-*/
-/**************************************************************************/
+// Send a single byte via I2C
 static inline void wiresend(uint8_t x) 
 {
-  #if ARDUINO >= 100
     Wire.write((uint8_t)x);
-  #else
-    Wire.send(x);
-  #endif
 }
 
-/**************************************************************************/
-/*! 
-    @brief  Reads a single byte via I2C
-*/
-/**************************************************************************/
+// Read a single byte via I2C
 static inline uint8_t wirerecv(void) 
 {
-  #if ARDUINO >= 100
     return Wire.read();
-  #else
-    return Wire.receive();
-  #endif
 }
 
-/**************************************************************************/
-/*! 
-    @brief  Instantiates a new PN532 class
-
-    @param  irq       Location of the IRQ pin
-    @param  reset     Location of the RSTPD_N pin
-*/
-/**************************************************************************/
-Adafruit_NFCShield_I2C::Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset) {
+// Constructor
+Adafruit_NFCShield_I2C::Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset, int buzzpin) {
   _irq = irq;
   _reset = reset;
 
   pinMode(_irq, INPUT);
   pinMode(_reset, OUTPUT);
+  
+  buzzerpin = buzzpin;
 }
 
-/**************************************************************************/
-/*! 
-    @brief  Setups the HW
-*/
-/**************************************************************************/
+// Setups the HW
 void Adafruit_NFCShield_I2C::begin() {
   Wire.begin();
 
@@ -77,6 +46,18 @@ void Adafruit_NFCShield_I2C::begin() {
   digitalWrite(_reset, LOW);
   delay(400);
   digitalWrite(_reset, HIGH);
+  
+  uint32_t versiondata = getFirmwareVersion();
+  if (! versiondata) {
+    // Raise Buzzer Exception
+    Serial.println("Didn't find PN532");
+    while (1);
+  }  
+
+  setPassiveActivationRetries(0xFF);  // Number of retry attempts 
+  SAMConfig();                        // configure board to read RFID tags
+  pinMode(buzzerpin, OUTPUT);
+  Serial.println("Started PN5432");
 }
  
 /**************************************************************************/
