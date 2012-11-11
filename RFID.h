@@ -6,6 +6,11 @@
 
 #include <Wire.h>
 
+#define STATE_INACTIVE 0
+#define STATE_ACTIVE_NOTWAITING 2
+#define STATE_ACTIVE_WAITING 1
+#define STATE_ERROR -1
+
 #define PN532_PREAMBLE                      (0x00)
 #define PN532_STARTCODE1                    (0x00)
 #define PN532_STARTCODE2                    (0xFF)
@@ -122,6 +127,7 @@ class Adafruit_NFCShield_I2C{
  public:
   Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset, int);
   void begin(void);
+  void perform(void);
   
   // Generic PN532 functions
   boolean SAMConfig(void);
@@ -131,25 +137,10 @@ class Adafruit_NFCShield_I2C{
   
   // ISO14443A functions
   boolean readPassiveTargetID(uint8_t cardbaudrate, uint8_t * uid, uint8_t * uidLength);
-  
-  // Mifare Classic functions
-  bool mifareclassic_IsFirstBlock (uint32_t uiBlock);
-  bool mifareclassic_IsTrailerBlock (uint32_t uiBlock);
-  uint8_t mifareclassic_AuthenticateBlock (uint8_t * uid, uint8_t uidLen, uint32_t blockNumber, uint8_t keyNumber, uint8_t * keyData);
-  uint8_t mifareclassic_ReadDataBlock (uint8_t blockNumber, uint8_t * data);
-  uint8_t mifareclassic_WriteDataBlock (uint8_t blockNumber, uint8_t * data);
-  uint8_t mifareclassic_FormatNDEF (void);
-  uint8_t mifareclassic_WriteNDEFURI (uint8_t sectorNumber, uint8_t uriIdentifier, const char * url);
-  
-  // Mifare Ultralight functions
-  uint8_t mifareultralight_ReadPage (uint8_t page, uint8_t * buffer);
-  
-  // Help functions to display formatted text
-  static void PrintHex(const byte * data, const uint32_t numBytes);
-  static void PrintHexChar(const byte * pbtData, const uint32_t numBytes);
 
  private:
   int buzzerpin;
+  int state;
   uint8_t _irq, _reset;
   uint8_t _uid[7];  // ISO14443A uid
   uint8_t _uidLen;  // uid len

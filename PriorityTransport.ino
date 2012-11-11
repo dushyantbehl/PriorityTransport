@@ -160,8 +160,18 @@ static int rfid_thread() {
   //gprs_perform();
 }
     
+#define LOOP_THRESHOLD_RFID 2
 
 void loop(void) {
-  rfid_thread();
-  modem.run();
+  long time = millis();
+  nfc.perform();
+  time = millis() - time;
+  if(time > LOOP_THRESHOLD_RFID)
+  {
+    Serial.print(" LOOP TIME [NFC] : ");
+    Serial.println(time);
+    delay(100);
+  }
+  delay(10000);
+  //modem.run();
 }
