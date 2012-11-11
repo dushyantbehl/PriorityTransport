@@ -30,10 +30,16 @@ typedef struct {
         long timestamp;
 } GPS;
 
+typedef struct {
+  int uid;
+  long time;
+  boolean to_send;
+} RFID;
+
 class GPRS
 {
 	public:
-	GPRS(HardwareSerial *modemPort, user *, GPS *);
+	GPRS(HardwareSerial *modemPort, user *, GPS *, RFID*);
 	void  requestModem(const String command, uint16_t timeout, boolean check);
 	void run();
 
@@ -41,6 +47,7 @@ class GPRS
 
         user * userdata;
         GPS * gpsdata;
+        RFID* rfiddata;
         
 	int gprsstate;
 	long timestart;

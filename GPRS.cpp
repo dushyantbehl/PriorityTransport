@@ -1,11 +1,12 @@
 #include "GPRS.h"
 
-GPRS::GPRS(HardwareSerial *modemPort, user * users, GPS * gps)
+GPRS::GPRS(HardwareSerial *modemPort, user * users, GPS * gps, RFID *rfid)
 	{
 		modempin = modemPort;
 		modempin->begin(19200);
                 userdata = users;
                 gpsdata = gps;
+                rfiddata = rfid;
 		waiting = OFF;
                 ATindex = 0;
                 ATsetupcommand[0] = "AT";
@@ -105,17 +106,17 @@ void	GPRS::send()
                             int k,j;
                             for(k=0;k<N_GPS;k++) 
                              {
-                                string += "latitude"+String(k+1, DEC)+"="+String(gpsdata[k].latitude, DEC)+"&longitude"+String(k+1, DEC)+"="+String(gpsdata[k].longitude, DEC)+"&time"+String(k+1, DEC)+"="+String(gpsdata[k].timestamp, DEC);
+                                string += "latitude"+String(k+1, DEC)+"="+String(gpsdata[k].latitude, DEC)+"&longitude"+String(k+1, DEC)+"="+String(gpsdata[k].longitude, DEC)+"&gpstime"+String(k+1, DEC)+"="+String(gpsdata[k].timestamp, DEC);
                              }
                             for(j=0;j<N_RFID;j++) 
                              {
+                               int count = 1;
                                // @SAURABH NOTE :  Access Users through userdata array pointer and GPS through gpsdata array pointer.
                                //                  Iterate through all the users in userdata and check if rfidsend = true, then send, then set rfidsend = false. 
                                //                  I have already done the gpsdata usage example in last for loop ^^.
                                //                  FIX THIS
-                               
-                               if(user.rfidsend == true)
-                               string += "rfid_tag"+String(j+1, DEC)+"="+String(user[j].rfid_tag, DEC);
+                               if(rfiddata[j].to_send == true)
+                               string += "uid"+String(count++, DEC)+"="+String(rfiddata[j].uid, DEC)+"&rfidtime"+String(count++, DEC)+"="+String(rfiddata[j].time, DEC);
                              }
                              int DATA_LENGTH = string.length();
                              {
