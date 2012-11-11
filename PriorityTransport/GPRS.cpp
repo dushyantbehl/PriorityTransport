@@ -20,6 +20,15 @@ GPRS::GPRS(HardwareSerial *modemPort, user * users, GPS * gps, RFID *rfid)
                 ATsendcommand[1] = "POST /priority/arduino.php HTTP/1.1\r\nHOST: www.utkarshsins.com\r\nUser-Agent: HTTPTool/1.1\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ";
 	}
 
+void GPRS::reset()
+{
+	gprsstate = setupstate;
+	ATindex=0;
+	waiting=OFF;
+	timeout = setuptimeout;
+	timestart=0;
+}
+
 boolean	GPRS::checktimeout(long timeout1)
 	{
 		long time = millis();
@@ -77,22 +86,13 @@ void	GPRS::setup()
 					waiting = OFF;
 				else if(variable==0)
 				{
-					gprsstate = setupstate;
-					ATindex=0;
-					waiting=OFF;
-					timeout = setuptimeout;
-					timestart=0;
+					reset();
 				}
 			}
 			if(!checktimeout(timeout))
 			{
-				gprsstate = setupstate;
-				ATindex=0;
-				waiting=OFF;
-				timeout = setuptimeout;
-				timestart=0;
+				reset();
 			}
-			
 		}
 	}
 	
@@ -152,18 +152,18 @@ void	GPRS::send()
 		{
 			if(modempin->available())
 			{
-				if(readterminal())
+				int variable = readterminal()
+				if(variable==1)
 					waiting = OFF;
-				else if(!checktimeout(timeout) || !readterminal())
+				else if(variable==0)
 				{
-					gprsstate = setupstate;
-					ATindex=0;
-					waiting=OFF;
-					timeout = sendtimeout;
-					timestart=0;
+					reset();
 				}
 			}
-			
+			if(!checktimeout(timeout))
+			{
+				reset();
+			}
 		}
 	}
 
