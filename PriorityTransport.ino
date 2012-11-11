@@ -172,6 +172,5 @@ void loop(void) {
     Serial.println(time);
     delay(100);
   }
-  delay(10000);
   //modem.run();
 }
