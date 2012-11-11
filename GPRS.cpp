@@ -114,7 +114,8 @@ void	GPRS::send()
                                //                  I have already done the gpsdata usage example in last for loop ^^.
                                //                  FIX THIS
                                
-                               // string += "idtime"+String(j+1, DEC)+"="+String(idtime[j], DEC)+"&id"+String(j+1, DEC)+"="+String(RFID[j], DEC);
+                               if(user.rfidsend == true)
+                               string += "rfid_tag"+String(j+1, DEC)+"="+String(user[j].rfid_tag, DEC);
                              }
                              int DATA_LENGTH = string.length();
                              {
