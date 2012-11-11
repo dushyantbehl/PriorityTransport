@@ -30,20 +30,21 @@ boolean	GPRS::checktimeout(long timeout1)
 			return false;
 	}
 	
-boolean	GPRS::readterminal()
+int	GPRS::readterminal()
 	{
 		//char* check = (char*)malloc(sizeof(char)*10);
-		char check[10];
 		int x=0;
 		while(modempin->available())
 		{
 			check[x] = modempin->read();
 			x++;
 		}
-		if(check[0]=='N' && check[1]=='O')
-			return false;
+		if(check[0]=='n' && check[1]=='o')
+			return 0;
+		else if(check[0]=='o' && check[1]=='k')
+			return 1;
 		else
-			return true;
+			return 2;
 	}
 	
 void	GPRS::setup()
@@ -71,9 +72,10 @@ void	GPRS::setup()
 		{
 			if(modempin->available())
 			{
-				if(readterminal())
+				int variable = readterminal()
+				if(variable==1)
 					waiting = OFF;
-				else if(!checktimeout(timeout) || !readterminal())
+				else if(variable==0)
 				{
 					gprsstate = setupstate;
 					ATindex=0;
@@ -81,6 +83,14 @@ void	GPRS::setup()
 					timeout = setuptimeout;
 					timestart=0;
 				}
+			}
+			if(!checktimeout(timeout))
+			{
+				gprsstate = setupstate;
+				ATindex=0;
+				waiting=OFF;
+				timeout = setuptimeout;
+				timestart=0;
 			}
 			
 		}

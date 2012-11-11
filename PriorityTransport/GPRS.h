@@ -55,7 +55,7 @@ class GPRS
 	int timeout;
 	bool waiting;
 	HardwareSerial *modempin;
-        
+       char check[100];
 	byte state;
 	int ATindex;
 	String ATsetupcommand[7];
