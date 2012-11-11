@@ -59,7 +59,12 @@ uint32_t Adafruit_NFCShield_I2C::getFirmwareVersion(void) {
 
   pn532_packetbuffer[0] = PN532_COMMAND_GETFIRMWAREVERSION;
 
-  wiresendcommand(pn532_packetbuffer, 1);
+  if(!sendCommandCheckAck(pn532_packetbuffer, 1))
+  {
+    Serial.println("Yahan hai problem");
+    return 0;
+  }
+  
   wirereaddata(pn532_packetbuffer, 12);
   
   // check some basic stuff
@@ -79,6 +84,38 @@ uint32_t Adafruit_NFCShield_I2C::getFirmwareVersion(void) {
   response |= pn532_packetbuffer[10];
 
   return response;
+}
+
+boolean Adafruit_NFCShield_I2C::sendCommandCheckAck(uint8_t *cmd, uint8_t cmdlen, uint16_t timeout) {
+  uint16_t timer = 0;
+  
+  // write the command
+  Serial.println("Send Command Check ACK!!!");
+  wiresendcommand(cmd, cmdlen);
+  
+  // Wait for chip to say its ready!
+  while (wirereadstatus() != PN532_I2C_READY) {
+    if (timeout != 0) {
+      timer+=10;
+      if (timer > timeout)  
+        return false;
+    }
+    delay(10);
+  }
+  
+  #ifdef PN532DEBUG
+  Serial.println("IRQ received");
+  #endif
+  
+  // read acknowledgement
+  if (!readackframe()) {
+    #ifdef PN532DEBUG
+    Serial.println("No ACK frame received!");
+    #endif
+    return false;
+  }
+
+  return true; // ack'd command
 }
 
 
@@ -132,7 +169,8 @@ void Adafruit_NFCShield_I2C::perform()
     return;
   else if(state == STATE_ACTIVE_WAITING)
   {
-    if(wirereadstatus() != 1)
+    //if(digitalRead(_irq) != 1)
+    if(wirereadstatus != PN532_I2C_READY)
       return;
     else
     {
@@ -235,7 +273,7 @@ void Adafruit_NFCShield_I2C::wirereaddata(uint8_t* buff, uint8_t n) {
   Wire.read();
   for (uint8_t i=0; i<n; i++) {
     delay(1);
-    buff[i] = Wire.read();
+    buff[i] = ((uint8_t) Wire.read());
 #ifdef PN532DEBUG
     Serial.print(" 0x");
     Serial.print(buff[i], HEX);
