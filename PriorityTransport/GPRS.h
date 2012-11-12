@@ -18,8 +18,8 @@
 #define OFF false
 #define N_GPS 5
 #define N_RFID 1
-#define setuptimeout 5000
-#define sendtimeout 5000
+#define setuptimeout 10000
+#define sendtimeout 30000
 #define receivetimeout 5000
 #define cycletimeout 60000
 
@@ -46,10 +46,13 @@ class GPRS
 
 	private:
 
+        String checkstring;
+        
         user * userdata;
         GPS * gpsdata;
         RFID* rfiddata;
         
+        int runcount;
 	int gprsstate;
 	long timestart;
 	long cycletimestart;

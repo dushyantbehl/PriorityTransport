@@ -165,13 +165,13 @@ static int rfid_thread() {
 
 void loop(void) {
   long time = millis();
-  /*nfc.perform();
+  nfc.perform();
   time = millis() - time;
   if(time > LOOP_THRESHOLD_RFID)
   {
     Serial.print(" LOOP TIME [NFC] : ");
     Serial.println(time);
     delay(100);
-  }*/
+  }
   modem.run();
 }
