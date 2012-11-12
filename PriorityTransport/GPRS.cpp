@@ -43,11 +43,14 @@ int	GPRS::readterminal()
 	{
 		//char* check = (char*)malloc(sizeof(char)*10);
 		int x=0;
+                Serial.print("reading terminal");
 		while(modempin->available())
 		{
 			check[x] = modempin->read();
 			x++;
 		}
+                Serial.print("Check:= ");
+                Serial.println(check);
 		if(check[0]=='n' && check[1]=='o')
 			return 0;
 		else if(check[0]=='o' && check[1]=='k')
@@ -81,7 +84,7 @@ void	GPRS::setup()
 		{
 			if(modempin->available())
 			{
-				int variable = readterminal()
+				int variable = readterminal();
 				if(variable==1)
 					waiting = OFF;
 				else if(variable==0)
@@ -152,7 +155,7 @@ void	GPRS::send()
 		{
 			if(modempin->available())
 			{
-				int variable = readterminal()
+				int variable = readterminal();
 				if(variable==1)
 					waiting = OFF;
 				else if(variable==0)

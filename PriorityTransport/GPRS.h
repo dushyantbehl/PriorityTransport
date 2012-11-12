@@ -62,7 +62,7 @@ class GPRS
 	String ATsetupcommand[7];
 	String ATsendcommand[2];
 	boolean checktimeout(long timeout1);
-	boolean readterminal();
+	int readterminal();
 	void setup();
         void send();
         void receive();	
