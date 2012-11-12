@@ -45,18 +45,19 @@ boolean	GPRS::checktimeout(long timeout1)
 int	GPRS::readterminal()
 	{
 		//char* check = (char*)malloc(sizeof(char)*10);
+                char check[100];
 		int x=0;
-                Serial.print("reading terminal");
+                //Serial.print("reading terminal");
 		while(modempin->available())
 		{
 			check[x] = modempin->read();
 			x++;
 		}
-                Serial.print("Check:= ");
+//                Serial.print("Check= ");
                 Serial.println(check);
-		if(check[0]=='n' && check[1]=='o')
+		if(check[0]=='N' && check[1]=='O')
 			return 0;
-		else if(check[0]=='o' && check[1]=='k')
+		else if(strstr(check, "\r\nOK\r\n"))
 			return 1;
 		else
 			return 2;
@@ -67,20 +68,20 @@ void	GPRS::setup()
 		if(waiting==OFF)
 		{
 			//char buf[BUF_LENGTH];
-                        requestModem(ATsetupcommand[ATindex], 1000, true);
+                        requestModem(ATsetupcommand[ATindex], 1000);
 			timestart = millis();
 			waiting = ON;
 			timeout = setuptimeout;
                         if(ATindex == 4)
 			Serial.println("Started GM865");
                         if(ATindex<6)
-			ATindex++;
+			  ATindex++;
                         else
                         {
                           gprsstate = sendstate;
                           ATindex = 0;
                           Serial.println("Connected to Server");
-                        } 
+                        }
 			
 		}
 		else
@@ -109,7 +110,7 @@ void	GPRS::send()
 		if(waiting==OFF)
 		{
 			//char buf[BUF_LENGTH];
-			requestModem(ATsendcommand[ATindex], 1000, true);
+			requestModem(ATsendcommand[ATindex], 1000);
 			timestart = millis();
 			waiting = ON;
 			timeout = 5000;
@@ -208,14 +209,14 @@ void	GPRS::receive()
 	
 
 
-void GPRS::requestModem(const String command, uint16_t timeout, boolean check)
+void GPRS::requestModem(const String command, uint16_t timeout)
 {
 			
  // byte count = 0;
   //char *found = 0;
   
   //*buf = 0;
-  Serial.println(command);
+  //Serial.println(command);
   modempin->print(command);
   modempin->print('\r');
   /*count = getsTimeout(buf, timeout);

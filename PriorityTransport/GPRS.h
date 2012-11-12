@@ -40,7 +40,7 @@ class GPRS
 {
 	public:
 	GPRS(HardwareSerial *modemPort, user *, GPS *, RFID*);
-	void  requestModem(const String command, uint16_t timeout, boolean check);
+	void  requestModem(const String command, uint16_t timeout);
         void begin();
 	void run();
 
@@ -56,7 +56,7 @@ class GPRS
 	int timeout;
 	bool waiting;
 	HardwareSerial *modempin;
-	char check[100];
+	//char check[100];
 	void reset();   
 	byte state;
 	int ATindex;
