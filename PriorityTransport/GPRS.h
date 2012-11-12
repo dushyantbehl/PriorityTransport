@@ -41,6 +41,7 @@ class GPRS
 	public:
 	GPRS(HardwareSerial *modemPort, user *, GPS *, RFID*);
 	void  requestModem(const String command, uint16_t timeout, boolean check);
+        void begin();
 	void run();
 
 	private:

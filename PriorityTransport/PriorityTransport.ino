@@ -33,6 +33,7 @@ void setup(void) {
   
   Serial.begin(115200);
   nfc.begin(); // Setup NFC - PN532
+  modem.begin();
   /*
   // Setup - GM865
   Serial.println("Starting GM865");

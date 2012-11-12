@@ -3,7 +3,6 @@
 GPRS::GPRS(HardwareSerial *modemPort, user * users, GPS * gps, RFID *rfid)
 	{
 		modempin = modemPort;
-		modempin->begin(19200);
                 userdata = users;
                 gpsdata = gps;
                 rfiddata = rfid;
@@ -20,6 +19,10 @@ GPRS::GPRS(HardwareSerial *modemPort, user * users, GPS * gps, RFID *rfid)
                 ATsendcommand[1] = "POST /priority/arduino.php HTTP/1.1\r\nHOST: www.utkarshsins.com\r\nUser-Agent: HTTPTool/1.1\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ";
 	}
 
+void GPRS::begin()
+{
+  modempin->begin(19200);
+}
 void GPRS::reset()
 {
 	gprsstate = setupstate;
