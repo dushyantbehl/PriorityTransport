@@ -6,8 +6,7 @@
 #include "Arduino.h"
 #define setupstate 0
 #define sendstate 1
-#define receivestate 2
-#define waitingtosendstate 3
+#define waitingtosendstate 2
 #define STATE_NONE 0
 #define STATE_ON 1
 #define STATE_INITIALIZED 2

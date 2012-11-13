@@ -42,18 +42,6 @@ void user::parse(String SingleUserString)
   pos = str.indexOf(":");  
   str = str.substring(pos+3);
   pos = str.indexOf(",");
-  temp = str.substring(0,pos);
-  temp.toCharArray(chr,temp.length()+1);
-  actual_pick_time = atol(chr);
-  pos = str.indexOf(":");  
-  str = str.substring(pos+3);
-  pos = str.indexOf(",");
-  temp = str.substring(0,pos);
-  temp.toCharArray(chr,temp.length()+1);
-  actual_drop_time = atol(chr);
-  pos = str.indexOf(":");  
-  str = str.substring(pos+3);
-  pos = str.indexOf(",");
   //temp = str.substring(0,pos)
   pick_location = str.substring(0,pos);
   pos = str.indexOf(":");  
@@ -72,20 +60,6 @@ void user::parse(String SingleUserString)
   temp = str.substring(0,pos);
   temp.toCharArray(chr,temp.length()+1);
   rfid_tag = atoi(chr);
-  pos = str.indexOf(":");  
-  str = str.substring(pos+3);
-  pos = str.indexOf(",");
-  temp = str.substring(0,pos);
-  temp.toCharArray(chr,temp.length()+1);
-  user_status = atoi(chr);
-  pos = str.indexOf(":");  
-  str = str.substring(pos+3);
-  pos = str.indexOf(",");
- // temp = str.substring(0,pos)
-  if(str.substring(0,pos)=="true")
-  rfidsend = true;
-  else
-  rfidsend = false;
 }
 
 
