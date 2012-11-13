@@ -216,7 +216,7 @@ void GPRS::requestModem(const String command, uint16_t timeout)
   //char *found = 0;
   
   //*buf = 0;
-  //Serial.println(command);
+  //  Serial.println(command);
   modempin->print(command);
   modempin->print('\r');
   /*count = getsTimeout(buf, timeout);
