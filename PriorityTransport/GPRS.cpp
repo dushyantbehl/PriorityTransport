@@ -1,5 +1,15 @@
 #include "GPRS.h"
 
+//#define DEBUG_TERMINAL_CHAR
+//#define DEBUG_TERMINAL_STRING
+//#define DEBUG_TERMINAL_BREAK
+//#define DEBUG_TERMINAL_RETURNING
+//#define DEBUG_RUN_COUNT
+// #define DEBUG_TRIMMING
+#define DEBUG_BUFFER
+#define DEBUG_SEND_PRINT
+#define DEBUG_OK_PRINT
+
 GPRS::GPRS(HardwareSerial *modemPort, user * users, GPS * gps, RFID *rfid)
 	{
 		modempin = modemPort;
@@ -8,6 +18,7 @@ GPRS::GPRS(HardwareSerial *modemPort, user * users, GPS * gps, RFID *rfid)
                 rfiddata = rfid;
 		waiting = OFF;
                 ATindex = 0;
+                runcount = 0;
                 ATsetupcommand[0] = "AT";
                 ATsetupcommand[1] = "AT+IPR=19200";
                 ATsetupcommand[2] = "AT+CMEE=2";
@@ -15,8 +26,8 @@ GPRS::GPRS(HardwareSerial *modemPort, user * users, GPS * gps, RFID *rfid)
                 ATsetupcommand[4] = "AT+FLO=0";
                 ATsetupcommand[5] = "AT+CGDCONT=1,\"IP\",\"airtelgprs.com\"";
                 ATsetupcommand[6] = "AT#GPRS=1";
-                ATsendcommand[0] = "AT#SKTD=0,80,\"www.utkarshsins.com\",0,0\r";
-                ATsendcommand[1] = "POST /priority/arduino.php HTTP/1.1\r\nHOST: www.utkarshsins.com\r\nUser-Agent: HTTPTool/1.1\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ";
+                ATsendcommand[0] = "AT#SKTD=0,80,\"www.utkarshsins.com\",0,0";
+                ATsendcommand[1] = "POST /priority/arduino.php HTTP/1.1\r\nHOST: www.utkarshsins.com\r\nUser-Agent: HTTPTool/1.1\r\nContent-Type: application/x-www-form-urlencoded";
 	}
 
 void GPRS::begin()
@@ -45,24 +56,121 @@ boolean	GPRS::checktimeout(long timeout1)
 int	GPRS::readterminal()
 	{
 		//char* check = (char*)malloc(sizeof(char)*10);
-                char check[100];
 		int x=0;
-                //Serial.print("reading terminal");
 		while(modempin->available())
 		{
-			check[x] = modempin->read();
+                        char check = modempin->read();
+			checkstring += check;
+                        #ifdef DEBUG_TERMINAL_CHAR
+                        Serial.print("[TERMINAL] reading : ");
+                        if(check == '\r')
+                          Serial.println("\\r");
+                        else if(check == '\n')
+                          Serial.println("\\n");
+                        else
+                          Serial.println(check);
+                        #endif
 			x++;
 		}
-//                Serial.print("Check= ");
-                Serial.println(check);
-		if(check[0]=='N' && check[1]=='O')
+              
+                #ifdef DEBUG_BUFFER
+                {
+                  String debugbuffer = checkstring;
+                  debugbuffer.replace("\r","\\r");
+                  debugbuffer.replace("\n","\\n");
+                  Serial.println("[BUFFER] " + debugbuffer);
+                }
+                #endif
+                
+                if(checkstring.indexOf("\r\n")!=-1)
+                {
+                  // Serial.println("Found : " + checkstring);
+                  #ifdef DEBUG_TRIMMING
+                  Serial.println(checkstring.substring(0,checkstring.indexOf("\r\n")) + "\\r\\n" + checkstring.substring(checkstring.indexOf("\r\n")+2));
+                  #endif
+                  String checkconds = checkstring.substring(0,checkstring.indexOf("\r\n"));
+                  if(checkconds.indexOf("NO") == -1 && checkconds.indexOf("OK") == -1 && checkconds.indexOf("CONNECT") == -1)
+                  {
+                    checkstring = checkstring.substring(checkstring.indexOf("\r\n")+2);
+                    #ifdef DEBUG_TRIMMING
+                    Serial.println("Trimmed First : "+checkstring);
+                    Serial.println("Trimming End");
+                    #endif
+                  }
+                }
+                #ifdef DEBUG_TERMINAL_STRING
+                Serial.print("[TERMINAL] string : ");
+                Serial.println(checkstring);
+                #endif
+                #ifdef DEBUG_TERMINAL_BREAK
+                Serial.println("[TERMINAL] break");
+                #endif
+		if(checkstring.indexOf("NO") != -1)
+                {
+                        #ifdef DEBUG_TERMINAL_RETURNING
+                        Serial.println("[TERMINAL] Returning : 0");
+                        #endif
+                        if(checkstring.indexOf("\r\n")!=-1)
+                        {
+                          #ifdef DEBUG_TRIMMING
+                          Serial.println("Trimming : " + checkstring + "\t=>\t" + checkstring.substring(checkstring.indexOf("\r\n")+2));
+                          Serial.println("Trimming End");
+                          #endif
+                          checkstring = checkstring.substring(checkstring.indexOf("\r\n")+2);
+                        }
 			return 0;
-		else if(strstr(check, "\r\nOK\r\n"))
+                }
+		else if(checkstring.indexOf("OK\r\n") != -1)
+                {
+                        #ifdef DEBUG_OK_PRINT
+                        Serial.println("OK");
+                        #endif
+                        
+                        #ifdef DEBUG_TERMINAL_RETURNING
+                        Serial.println("[TERMINAL] Returning : 1");
+                        #endif
+                        
+                        if(checkstring.indexOf("\r\n")!=-1)
+                        {
+                          #ifdef DEBUG_TRIMMING
+                          Serial.println("Trimming : " + checkstring + "\t=>\t" + checkstring.substring(checkstring.indexOf("\r\n")+2));
+                          Serial.println("Trimming End");
+                          #endif
+                          checkstring = checkstring.substring(checkstring.indexOf("OK\r\n")+4);
+                        }
 			return 1;
-		else
+                }
+                else if(checkstring.indexOf("CONNECT\r\n") != -1)
+                {
+                        #ifdef DEBUG_OK_PRINT
+                        Serial.println("CONNECT");
+                        #endif
+                        
+                        #ifdef DEBUG_TERMINAL_RETURNING
+                        Serial.println("[TERMINAL] Returning : 3");
+                        #endif
+                        
+                        if(checkstring.indexOf("\r\n")!=-1)
+                        {
+                          #ifdef DEBUG_TRIMMING
+                          Serial.println("Trimming : " + checkstring + "\t=>\t" + checkstring.substring(checkstring.indexOf("\r\n")+2));
+                          Serial.println("Trimming End");
+                          #endif
+                          checkstring = checkstring.substring(checkstring.indexOf("CONNECT\r\n")+9);
+                        }
+			return 3;
+                }
+                else
+                {
+                        #ifdef DEBUG_TERMINAL_RETURNING
+                        Serial.print("[TERMINAL] String : ");
+                        Serial.println(checkstring);
+                        Serial.println("[TERMINAL] Returning : 2");
+                        #endif
 			return 2;
+                }
 	}
-	
+		
 void	GPRS::setup()
 	{
 		if(waiting==OFF)
@@ -71,26 +179,30 @@ void	GPRS::setup()
                         requestModem(ATsetupcommand[ATindex], 1000);
 			timestart = millis();
 			waiting = ON;
-			timeout = setuptimeout;
-                        if(ATindex == 4)
-			Serial.println("Started GM865");
-                        if(ATindex<6)
-			  ATindex++;
-                        else
-                        {
-                          gprsstate = sendstate;
-                          ATindex = 0;
-                          Serial.println("Connected to Server");
-                        }
-			
+			timeout = setuptimeout;		
 		}
 		else
 		{
 			if(modempin->available())
 			{
 				int variable = readterminal();
-				if(variable==1)
+				if(variable==1) {
 					waiting = OFF;
+
+                                        if(ATindex == 4)
+                			  Serial.println("Started GM865");
+                                        else if(ATindex == 6)
+                                        {
+                                          Serial.println("Connected to Server");
+                                          gprsstate = sendstate;
+                                        }
+                                        if(ATindex<6)
+                			  ATindex++;
+                                        else
+                                        {
+                                          ATindex = 0;
+                                        }	
+                                }
 				else if(variable==0)
 				{
 					reset();
@@ -114,16 +226,14 @@ void	GPRS::send()
 			timestart = millis();
 			waiting = ON;
 			timeout = 5000;
-                        if(ATindex==0)
-                        ATindex++;
-                        else if(ATindex == 1)
+                        if(ATindex == 1)
                         {
-			    Serial.println("sending request ...");
+			    //Serial.println("sending request ...");
                             String string = "";
                             int k,j;
                             for(k=0;k<N_GPS;k++) 
                              {
-                                string += "latitude"+String(k+1, DEC)+"="+String(gpsdata[k].latitude, DEC)+"&longitude"+String(k+1, DEC)+"="+String(gpsdata[k].longitude, DEC)+"&gpstime"+String(k+1, DEC)+"="+String(gpsdata[k].timestamp, DEC);
+                                string += "&latitude"+String(k+1, DEC)+"="+String(gpsdata[k].latitude, DEC)+"&longitude"+String(k+1, DEC)+"="+String(gpsdata[k].longitude, DEC)+"&gpstime"+String(k+1, DEC)+"="+String(gpsdata[k].timestamp, DEC);
                              }
                             for(j=0;j<N_RFID;j++) 
                              {
@@ -137,8 +247,8 @@ void	GPRS::send()
                              }
                              int DATA_LENGTH = string.length();
                              {
-                                  char buff[string.length()+1];
-                                  String lengthed = String(DATA_LENGTH, DEC) + "\r\n\r\n";
+                                  String lengthed = "Content-Length: " + String(DATA_LENGTH, DEC) + "\r\n\r\n";
+                                  char buff[lengthed.length()+1];
                                   lengthed.toCharArray(buff,lengthed.length()+1);
                                   modempin->print(buff);
                                   Serial.println(buff);
@@ -148,10 +258,7 @@ void	GPRS::send()
                             modempin->print(buff);
                             Serial.println(buff);
   
-                            modempin->print("\r\n");
-                            Serial.println("Request Sent.");
-                            gprsstate = receivestate;
-                            ATindex = 0;
+                            //modempin->print("\r\n");
                         } 
 			timeout = sendtimeout;
 		}
@@ -160,8 +267,18 @@ void	GPRS::send()
 			if(modempin->available())
 			{
 				int variable = readterminal();
-				if(variable==1)
-					waiting = OFF;
+				if(variable==3)
+                                {
+                                	waiting = OFF;
+                                      if(ATindex==0)
+                                          ATindex++;
+                                      else
+                                      {
+                                        Serial.println("Request Sent.");
+                                        gprsstate = receivestate;
+                                        ATindex = 0;
+                                      }
+                                }
 				else if(variable==0)
 				{
 					reset();
@@ -216,9 +333,10 @@ void GPRS::requestModem(const String command, uint16_t timeout)
   //char *found = 0;
   
   //*buf = 0;
-  //  Serial.println(command);
+  Serial.println("[SENDING] " + command);
   modempin->print(command);
   modempin->print('\r');
+  modempin->print('\n');
   /*count = getsTimeout(buf, timeout);
   if (count) {
     if (check) {
@@ -244,6 +362,12 @@ void GPRS::requestModem(const String command, uint16_t timeout)
 
 void	GPRS::run()
 	{
+                #ifdef DEBUG_RUN_COUNT
+                runcount++;
+                Serial.print("[RUNCOUNT] ");
+                Serial.println(runcount);
+                #endif
+                
 		if(gprsstate==setupstate)
 		{
 			setup();
