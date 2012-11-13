@@ -275,7 +275,7 @@ void	GPRS::send()
                                       else
                                       {
                                         Serial.println("Request Sent.");
-                                        gprsstate = receivestate;
+                                        gprsstate = waitingtosendstate;
                                         ATindex = 0;
                                       }
                                 }
@@ -290,39 +290,6 @@ void	GPRS::send()
 			}
 		}
 	}
-
-
-void	GPRS::receive()
-	{
-		if(waiting == ON)
-		{
-			char buf[BUF_LENGTH];
-			
-			timeout = receivetimeout;
-			long time = millis();
-                        int x=0;
-			if(time-timestart <= timeout)
-			{
-				while(modempin->available())
-				{
-					buf[x] = modempin->read();
-					x++;
-				}
-				if(strlen(buf) > 0)
-				{
-					Serial.print("Message from Server:");
-					Serial.println(buf);
-					state = waitingtosendstate;
-				}
-			}
-		}
-		else
-		{
-			waiting = ON;
-			timestart = millis();
-		}
-	}
-
 	
 
 
@@ -376,10 +343,6 @@ void	GPRS::run()
 		{
 			cycletimestart = millis();
 			send();
-		}
-		else if(gprsstate==receivestate)
-		{
-			receive();
 		}
 		else if(gprsstate==waitingtosendstate)
 		{
