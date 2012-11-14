@@ -10,6 +10,7 @@
 #define RESET (3)
 
 const int buzzerpin = 12;
+const int resetonoffpin =22;
 
 Adafruit_NFCShield_I2C nfc(IRQ, RESET, buzzerpin);
 
@@ -21,11 +22,9 @@ user users[5];
 GPS gps[60]; 
 RFID rfid[10];
 
-// GM865
-int onPin = 22;                      // pin to toggle the modem's on/off
 char PIN[1] = "";                // replace this with your PIN
 //Position position;                   // stores the GPS position
-GPRS modem(&Serial3, users, gps, rfid);   // modem is connected to Serial3
+GPRS modem(&Serial3, users, gps, rfid,resetonoffpin);   // modem is connected to Serial3
 char cmd;                            // command read from terminal
 static long TIME_DELAY1 = 60000;     //Time Delay for GPRS thread
 
@@ -165,7 +164,7 @@ static int rfid_thread() {
 
 void loop(void) {
   long time = millis();
-  nfc.perform();
+  /*nfc.perform();
   time = millis() - time;
   if(time > LOOP_THRESHOLD_RFID)
   {
@@ -173,5 +172,6 @@ void loop(void) {
     Serial.println(time);
     delay(100);
   }
-  modem.run();
+  modem.run();*/
+  modem.resetpin();
 }
