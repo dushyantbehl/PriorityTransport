@@ -5,8 +5,8 @@
 //#define DEBUG_TERMINAL_BREAK
 //#define DEBUG_TERMINAL_RETURNING
 //#define DEBUG_RUN_COUNT
-// #define DEBUG_TRIMMING
-#define DEBUG_BUFFER
+//#define DEBUG_TRIMMING
+//#define DEBUG_BUFFER
 #define DEBUG_SEND_PRINT
 #define DEBUG_OK_PRINT
 
@@ -17,6 +17,7 @@ GPRS::GPRS(HardwareSerial *modemPort, user * users, GPS * gps, RFID *rfid)
                 gpsdata = gps;
                 rfiddata = rfid;
 		waiting = OFF;
+		count =0;
                 ATindex = 0;
                 runcount = 0;
                 ATsetupcommand[0] = "AT";
@@ -26,7 +27,8 @@ GPRS::GPRS(HardwareSerial *modemPort, user * users, GPS * gps, RFID *rfid)
                 ATsetupcommand[4] = "AT+FLO=0";
                 ATsetupcommand[5] = "AT+CGDCONT=1,\"IP\",\"airtelgprs.com\"";
                 ATsetupcommand[6] = "AT#GPRS=1";
-                ATsendcommand[0] = "AT#SKTD=0,80,\"www.utkarshsins.com\",0,0";
+                //ATsendcommand[0] = "AT#SKTD=0,80,\"www.utkarshsins.com\",255,0";
+                ATsendcommand[0] = "AT#SD=2,0,80,\"www.utkarshsins.com\"";
                 ATsendcommand[1] = "POST /priority/arduino.php HTTP/1.1\r\nHOST: www.utkarshsins.com\r\nUser-Agent: HTTPTool/1.1\r\nContent-Type: application/x-www-form-urlencoded";
 	}
 
@@ -41,21 +43,16 @@ void GPRS::reset()
 	waiting=OFF;
 	timeout = setuptimeout;
 	timestart=0;
+	count =0;
 }
 
 boolean	GPRS::checktimeout(long timeout1)
 	{
-		long time = millis();
-		int timedifference = time-timestart;
-		if(timedifference<=timeout1)
-			return true;
-		else
-			return false;
+                return (millis() - timestart) <= timeout1;
 	}
 	
 int	GPRS::readterminal()
 	{
-		//char* check = (char*)malloc(sizeof(char)*10);
 		int x=0;
 		while(modempin->available())
 		{
@@ -106,19 +103,19 @@ int	GPRS::readterminal()
                 Serial.println("[TERMINAL] break");
                 #endif
 		if(checkstring.indexOf("NO") != -1)
-                {
-                        #ifdef DEBUG_TERMINAL_RETURNING
-                        Serial.println("[TERMINAL] Returning : 0");
-                        #endif
-                        if(checkstring.indexOf("\r\n")!=-1)
-                        {
-                          #ifdef DEBUG_TRIMMING
-                          Serial.println("Trimming : " + checkstring + "\t=>\t" + checkstring.substring(checkstring.indexOf("\r\n")+2));
-                          Serial.println("Trimming End");
-                          #endif
-                          checkstring = checkstring.substring(checkstring.indexOf("\r\n")+2);
-                        }
-			return 0;
+        				{
+        						#ifdef DEBUG_TERMINAL_RETURNING
+        						Serial.println("[TERMINAL] Returning : 0");
+        						#endif
+        						if(checkstring.indexOf("\r\n")!=-1)
+        						{
+        							#ifdef DEBUG_TRIMMING
+        							Serial.println("Trimming : " + checkstring + "\t=>\t" + checkstring.substring(checkstring.indexOf("\r\n")+2));
+        							Serial.println("Trimming End");
+        							#endif
+        							checkstring = checkstring.substring(checkstring.indexOf("\r\n")+2);
+        						}
+						return 0;
                 }
 		else if(checkstring.indexOf("OK\r\n") != -1)
                 {
@@ -138,7 +135,7 @@ int	GPRS::readterminal()
                           #endif
                           checkstring = checkstring.substring(checkstring.indexOf("OK\r\n")+4);
                         }
-			return 1;
+						return 1;
                 }
                 else if(checkstring.indexOf("CONNECT\r\n") != -1)
                 {
@@ -188,7 +185,7 @@ void	GPRS::setup()
 				int variable = readterminal();
 				if(variable==1) {
 					waiting = OFF;
-
+                                        count =0;
                                         if(ATindex == 4)
                 			  Serial.println("Started GM865");
                                         else if(ATindex == 6)
@@ -205,7 +202,13 @@ void	GPRS::setup()
                                 }
 				else if(variable==0)
 				{
-					reset();
+					if(count < 3)
+					{
+						waiting = OFF;
+						count++;
+					}
+					else
+						reset();
 				}
 			}
 			if(!checktimeout(timeout))
@@ -216,17 +219,35 @@ void	GPRS::setup()
 	}
 	
 
-
+// TODO:
+// @Saurabh - Think of a way to find out that the http request
+// should have ended and now the modem should switch the state
+// to terminate the connection
 void	GPRS::send()
 	{
 		if(waiting==OFF)
 		{
 			//char buf[BUF_LENGTH];
-			requestModem(ATsendcommand[ATindex], 1000);
-			timestart = millis();
+                        if(ATindex < 1)
+          			requestModem(ATsendcommand[ATindex], 1000);
+                        else 
+                        {
+                          // TODO: ESCAPE SEQUENCE + TERMINATION AT COMMAND
+                          // @Akshay - Put this in the state machine 
+                          // Replace the delays with timeouts
+                          Serial.println("TERMINATING CONNECTION");
+                          delay(2000);
+                          Serial.println("+++");
+                          modempin->print("+++");
+                          delay(2000);
+                          requestModem("AT#SH=2", 100);
+                          
+                          cycletimestart = millis();
+                          gprsstate=waitingtosendstate;
+                        }
+                        
 			waiting = ON;
-			timeout = 5000;
-                        if(ATindex == 1)
+                        if(ATindex == 2)
                         {
 			    //Serial.println("sending request ...");
                             String string = "";
@@ -238,10 +259,6 @@ void	GPRS::send()
                             for(j=0;j<N_RFID;j++) 
                              {
                                int count = 1;
-                               // @SAURABH NOTE :  Access Users through userdata array pointer and GPS through gpsdata array pointer.
-                               //                  Iterate through all the users in userdata and check if rfidsend = true, then send, then set rfidsend = false. 
-                               //                  I have already done the gpsdata usage example in last for loop ^^.
-                               //                  FIX THIS
                                if(rfiddata[j].to_send == true)
                                string += "uid"+String(count++, DEC)+"="+String(rfiddata[j].uid, DEC)+"&rfidtime"+String(count++, DEC)+"="+String(rfiddata[j].time, DEC);
                              }
@@ -271,7 +288,10 @@ void	GPRS::send()
                                 {
                                 	waiting = OFF;
                                       if(ATindex==0)
+                                      {
                                           ATindex++;
+                                          
+                                      }
                                       else
                                       {
                                         Serial.println("Request Sent.");
@@ -281,8 +301,22 @@ void	GPRS::send()
                                 }
 				else if(variable==0)
 				{
-					reset();
+					if(count < 3)
+					{
+						waiting = OFF;
+						count++;
+					}
+					else
+                                        {
+						reset();
+                                        }
 				}
+                                else if(variable==1)
+                                {
+                                  ATindex = 0;
+                                  waiting = OFF;
+                                }
+                                  
 			}
 			if(!checktimeout(timeout))
 			{
@@ -300,7 +334,7 @@ void GPRS::requestModem(const String command, uint16_t timeout)
   //char *found = 0;
   
   //*buf = 0;
-  Serial.println("[SENDING] " + command);
+  Serial.println("[SENDING] " + command + "\n[state] = " + gprsstate);
   modempin->print(command);
   modempin->print('\r');
   modempin->print('\n');
@@ -341,13 +375,13 @@ void	GPRS::run()
 		}
 		else if(gprsstate==sendstate)
 		{
-			cycletimestart = millis();
+			//cycletimestart = millis();
 			send();
 		}
 		else if(gprsstate==waitingtosendstate)
 		{
 			if(millis()-cycletimestart>=cycletimeout)
-				state = sendstate;
+				gprsstate = sendstate;
 		}
 	}
 

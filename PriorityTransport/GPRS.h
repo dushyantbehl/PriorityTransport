@@ -18,8 +18,7 @@
 #define N_GPS 5
 #define N_RFID 1
 #define setuptimeout 10000
-#define sendtimeout 30000
-#define receivetimeout 5000
+#define sendtimeout 60000
 #define cycletimeout 60000
 
 
@@ -52,6 +51,7 @@ class GPRS
         RFID* rfiddata;
         
         int runcount;
+		int count;
 	int gprsstate;
 	long timestart;
 	long cycletimestart;
@@ -59,8 +59,7 @@ class GPRS
 	bool waiting;
 	HardwareSerial *modempin;
 	//char check[100];
-	void reset();   
-	byte state;
+	void reset();
 	int ATindex;
 	String ATsetupcommand[7];
 	String ATsendcommand[2];
