@@ -15,14 +15,14 @@ byte pn532response_firmwarevers[] = {0x00, 0xFF, 0x06, 0xFA, 0xD5, 0x03};
 byte pn532_packetbuffer[PN532_PACKBUFFSIZ];
 
 // Constructor
-Adafruit_NFCShield_I2C::Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset, int buzzpin) {
+Adafruit_NFCShield_I2C::Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset, Beep * beep) {
   _irq = irq;
   _reset = reset;
 
   pinMode(_irq, INPUT);
   pinMode(_reset, OUTPUT);
   
-  buzzerpin = buzzpin;
+  beeper = beep;
   state = STATE_INACTIVE;
 }
 
@@ -168,6 +168,8 @@ void Adafruit_NFCShield_I2C::perform()
         Serial.print(" 0x");Serial.print(uid[i], HEX);
       }
         Serial.println();
+        
+      beeper->setBeep(NON_PRIORITY_BEEP);
       
       pn532_packetbuffer[0] = PN532_COMMAND_INLISTPASSIVETARGET;
       pn532_packetbuffer[1] = 1;  // max 1 cards at once (we can set this to 2 later)

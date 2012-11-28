@@ -5,6 +5,7 @@
 #endif
 
 #include <Wire.h>
+#include "Beep.h"
 
 #define STATE_INACTIVE 0
 #define STATE_ACTIVE_NOTWAITING 2
@@ -125,7 +126,7 @@
 
 class Adafruit_NFCShield_I2C{
  public:
-  Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset, int);
+  Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset, Beep *);
   void begin(void);
   void perform(void);
   
@@ -141,6 +142,7 @@ class Adafruit_NFCShield_I2C{
  private:
   int buzzerpin;
   int state;
+  Beep * beeper;
   uint8_t _irq, _reset;
   uint8_t _uid[7];  // ISO14443A uid
   uint8_t _uidLen;  // uid len

@@ -15,9 +15,8 @@
 #define IRQ   (2)
 #define RESET (3)
 
-const int buzzerpin = 12;
+const int buzzerpin = 8;
 
-Adafruit_NFCShield_I2C nfc(IRQ, RESET, buzzerpin);
 GPS myGPS(&Serial1);
 
 #define BEEP_PULSE_SHORT 125
@@ -26,6 +25,9 @@ boolean validate = true;
 
 user users[3];
 RFID rfid[10];
+
+Beep beep(buzzerpin);
+Adafruit_NFCShield_I2C nfc(IRQ, RESET, &beep);
 
 // GM865
 int onPin = 22;                      // pin to toggle the modem's on/off
@@ -43,6 +45,7 @@ void setup(void) {
   users[0].scheduled_drop_time = 2240;
   users[0].entry_num = "2010CS50293";
   Serial.begin(115200);
+  beep.begin();
   nfc.begin(); // Setup NFC - PN532
   modem.begin();
   myGPS.begin();
@@ -53,6 +56,7 @@ void setup(void) {
 
 void loop(void) {
   long time = millis();
+  beep.execute();
   nfc.perform();
   time = millis() - time;
   if(time > LOOP_THRESHOLD_RFID)

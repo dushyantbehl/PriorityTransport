@@ -456,7 +456,7 @@ void	GPRS::send()
                                 	waiting = OFF;
                                     ATindex++;
                                 }
-				else if(variable==0)
+				else if(variable==0 || variable == 6 || variable == 5 || variable == 7)
 				{
 					if(count < 3)
 					{
