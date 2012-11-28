@@ -32,7 +32,7 @@ int onPin = 22;                      // pin to toggle the modem's on/off
 char PIN[1] = "";                // replace this with your PIN
 //Position position;                   // stores the GPS position
 LCD lcd(users);
-GPRS modem(&Serial3, users,&myGPS, rfid, &lcd);   // modem is connected to Serial3
+GPRS modem(&Serial2, users,&myGPS, rfid, &lcd);   // modem is connected to Serial3
 char cmd;                            // command read from terminal
 static long TIME_DELAY1 = 60000;     //Time Delay for GPRS thread
 
