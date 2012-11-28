@@ -254,7 +254,7 @@ int	GPRS::readterminal()
                       if(checkstring.indexOf("]") != -1)
                       {
                           checkstring = checkstring.substring(checkstring.indexOf("["),checkstring.indexOf("]")+1);
-                          long_parse(checkstring);
+                          //long_parse(checkstring);
                           checkstring = checkstring.substring(checkstring.indexOf("]")+1);
                           return 1;
                       }
@@ -456,7 +456,7 @@ void	GPRS::send()
                                 	waiting = OFF;
                                     ATindex++;
                                 }
-				else if(variable==0 || variable == 6 || variable == 5 || variable == 7)
+				else if(variable==0 || variable == 6)
 				{
 					if(count < 3)
 					{

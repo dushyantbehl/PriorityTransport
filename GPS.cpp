@@ -42,7 +42,7 @@ bool GPS::feedGPS(){
 	if (modemPort->available())
 	{
 		if (gps.encode(modemPort->read())){
-                Serial.println("GPS : New Line Received");
+                //Serial.println("GPS : New Line Received");
 	        waiting = false ;
                 return true;
                 }
