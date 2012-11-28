@@ -5,7 +5,7 @@ using namespace std;
 user::user()
 {
   scheduled_pick_time = 0;
-  scheduled_drop_time = 0;
+  scheduled_drop_time =0;
   actual_pick_time = 0;
   actual_drop_time = 0;
   pick_location = "";
@@ -61,5 +61,6 @@ void user::parse(String SingleUserString)
   temp.toCharArray(chr,temp.length()+1);
   rfid_tag = atoi(chr);
 }
+
 
 

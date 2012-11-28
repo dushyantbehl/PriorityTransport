@@ -12,8 +12,6 @@ class user
     public:
       user();
       void parse(String);
-    
-    private:
       long scheduled_pick_time;
       long scheduled_drop_time;
       long actual_pick_time;
