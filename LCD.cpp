@@ -53,12 +53,15 @@ void LCD::display(int no_of_lcd)
   Serial.println("Inside the display loop");
   int index=0;
   //displayuserdata_1(user_aka[index].entry_num, user_aka[index].scheduled_pick_time, user_aka[index].scheduled_drop_time, user_aka[index].pick_location, user_aka[index].drop_location);
-  
+  int print_index=0;
   while(index<no_of_lcd)
-  	{
-  	displayuserdata_2to5(user_aka[index].entry_num, user_aka[index].scheduled_pick_time, user_aka[index].scheduled_drop_time, user_aka[index].pick_location, user_aka[index].drop_location,index);
-  	index++;
-          }
+    {
+      Serial.print("[AKANKSHA] ");
+      Serial.println(user_aka[index].user_status);
+            if(user_aka[index].user_status < 1)
+              displayuserdata_2to5(user_aka[index].entry_num, user_aka[index].scheduled_pick_time, user_aka[index].scheduled_drop_time, user_aka[index].pick_location, user_aka[index].drop_location,print_index++);
+      	  index++;
+    }
           redisplay = false;
   }
 }

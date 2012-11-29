@@ -15,7 +15,7 @@ byte pn532response_firmwarevers[] = {0x00, 0xFF, 0x06, 0xFA, 0xD5, 0x03};
 byte pn532_packetbuffer[PN532_PACKBUFFSIZ];
 
 // Constructor
-Adafruit_NFCShield_I2C::Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset, Beep * beep) {
+Adafruit_NFCShield_I2C::Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset, Beep * beep, user * usersin, LCD * lcdin) {
   _irq = irq;
   _reset = reset;
 
@@ -24,6 +24,9 @@ Adafruit_NFCShield_I2C::Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset, Beep 
   
   beeper = beep;
   state = STATE_INACTIVE;
+  
+  users = usersin;
+  lcd = lcdin;
 }
 
 // Setups the HW
@@ -165,11 +168,33 @@ void Adafruit_NFCShield_I2C::perform()
       for (uint8_t i=0; i < pn532_packetbuffer[12]; i++) 
       {
         uid[i] = pn532_packetbuffer[13+i];
-        Serial.print(" 0x");Serial.print(uid[i], HEX);
+//        Serial.print(" 0x");Serial.print(uid[i], HEX);
       }
-        Serial.println();
+      int uidval = uid[0]+uid[1]*8+uid[2]*16;
+        Serial.println(uidval);
         
-      beeper->setBeep(NON_PRIORITY_BEEP);
+      
+      for(int i =0; i<4; i++)
+      {
+        if(i==3)
+        {
+          Serial.println("FOUND NON_PRIORITY CUSTOMER");
+          beeper->setBeep(NON_PRIORITY_BEEP);
+          break;
+        }
+  
+        if(users[i].rfid_tag == uidval)
+        {
+          Serial.println("FOUND PRIORITY CUSTOMER");
+          users[i].rfidsend = true;
+          users[i].user_status++;
+          Serial.print("User_Status : ");
+          Serial.print(users[i].user_status);
+          lcd->invalidate();
+          beeper->setBeep(PRIORITY_BEEP);
+          break;
+        }
+      }
       
       pn532_packetbuffer[0] = PN532_COMMAND_INLISTPASSIVETARGET;
       pn532_packetbuffer[1] = 1;  // max 1 cards at once (we can set this to 2 later)

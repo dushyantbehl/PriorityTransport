@@ -6,6 +6,8 @@
 
 #include <Wire.h>
 #include "Beep.h"
+#include "User.h"
+#include "LCD.h"
 
 #define STATE_INACTIVE 0
 #define STATE_ACTIVE_NOTWAITING 2
@@ -126,7 +128,7 @@
 
 class Adafruit_NFCShield_I2C{
  public:
-  Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset, Beep *);
+  Adafruit_NFCShield_I2C(uint8_t irq, uint8_t reset, Beep *, user *, LCD *);
   void begin(void);
   void perform(void);
   
@@ -140,9 +142,11 @@ class Adafruit_NFCShield_I2C{
   boolean readPassiveTargetID(uint8_t cardbaudrate, uint8_t * uid, uint8_t * uidLength);
 
  private:
+   user * users;
   int buzzerpin;
   int state;
   Beep * beeper;
+  LCD * lcd;
   uint8_t _irq, _reset;
   uint8_t _uid[7];  // ISO14443A uid
   uint8_t _uidLen;  // uid len

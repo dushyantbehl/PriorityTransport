@@ -18,7 +18,7 @@ user::user()
 
 void user::parse(String SingleUserString)
 {
-  // @Saurabh :   FIXME
+  // @Saurabh =   FIXME
   //              It would be easier if you just pass string for one user into this 
   //              function and parse it for the current user. That's why I have 
   //              coded it like this
@@ -27,39 +27,40 @@ void user::parse(String SingleUserString)
   String str = SingleUserString;
   String temp;
   char chr[str.length()+1];
-  pos = str.indexOf(":");  
+  pos = str.indexOf("=");  
   str = str.substring(pos+3);
   pos = str.indexOf(",");
   temp = str.substring(0,pos);
   temp.toCharArray(chr,temp.length()+1);
   scheduled_pick_time = atol(chr);
-  pos = str.indexOf(":");  
+  pos = str.indexOf("=");  
   str = str.substring(pos+3);
   pos = str.indexOf(",");
   temp = str.substring(0,pos);
   temp.toCharArray(chr,temp.length()+1);
   scheduled_drop_time = atol(chr);
-  pos = str.indexOf(":");  
+  pos = str.indexOf("=");  
   str = str.substring(pos+3);
   pos = str.indexOf(",");
   //temp = str.substring(0,pos)
   pick_location = str.substring(0,pos);
-  pos = str.indexOf(":");  
+  pos = str.indexOf("=");  
   str = str.substring(pos+3);
   pos = str.indexOf(",");
   //temp = str.substring(0,pos)
   drop_location = str.substring(0,pos);
-  pos = str.indexOf(":");  
+  pos = str.indexOf("=");  
   str = str.substring(pos+3);
   pos = str.indexOf(",");
   //temp = str.substring(0,pos)
   entry_num = str.substring(0,pos);
-  pos = str.indexOf(":");  
+  pos = str.indexOf("=");  
   str = str.substring(pos+3);
   pos = str.indexOf(",");
   temp = str.substring(0,pos);
   temp.toCharArray(chr,temp.length()+1);
   rfid_tag = atoi(chr);
+  user_status = -1;
 }
 
 

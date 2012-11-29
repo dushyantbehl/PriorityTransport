@@ -21,7 +21,7 @@
 #define N_GPS 60
 #define N_RFID 10
 #define setuptimeout 4000
-#define sendtimeout 60000
+#define sendtimeout 40000
 #define cycletimeout 60000
 #define sendcount 3
 #define setupcount 7
@@ -39,7 +39,7 @@ class GPRS
 	GPRS(HardwareSerial *modemPort, user *, GPS*, RFID*, LCD*);
 	void  requestModem(const String command, uint16_t timeout);
         void begin();
-	void run();
+	boolean run();
         void long_parse(String);
 
 	private:

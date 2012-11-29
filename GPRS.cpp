@@ -50,6 +50,10 @@ void GPRS::reset()
 
 boolean	GPRS::checktimeout(long timeout1)
 	{
+//                if(ATindex ==1 && (millis() - timestart) <= timeout1)
+//                Serial.println("Still no time out");
+//                else if(ATindex==1)
+//                Serial.println("TIMEOUT!!");
                 return (millis() - timestart) <= timeout1;
 	}
 	
@@ -252,9 +256,10 @@ int	GPRS::readterminal()
                     if(checkstring.indexOf("[") != -1)
                     {
                       if(checkstring.indexOf("]") != -1)
-                      {
+                      { 
                           checkstring = checkstring.substring(checkstring.indexOf("["),checkstring.indexOf("]")+1);
-                          //long_parse(checkstring);
+                          Serial.println("PARSING : " + checkstring);
+                          long_parse(checkstring);
                           checkstring = checkstring.substring(checkstring.indexOf("]")+1);
                           return 1;
                       }
@@ -482,7 +487,13 @@ void	GPRS::send()
 			}
 			if(!checktimeout(timeout))
 			{
-				reset();
+                                if(ATindex==1)
+                                {
+                                  ATindex++;
+                                  waiting = OFF;
+                                } 
+                                else
+				  reset();
 			}
 		}
 	}
@@ -524,7 +535,7 @@ void GPRS::requestModem(const String command, uint16_t timeout)
   //return count;
 }
 
-void	GPRS::run()
+boolean	GPRS::run()
 	{
                 #ifdef DEBUG_RUN_COUNT
                 runcount++;
@@ -545,7 +556,8 @@ void	GPRS::run()
 		{
 			if(millis()-cycletimestart>=cycletimeout)
 				gprsstate = sendstate;
-		}
+          		}
+            return gprsstate!=sendstate;
 	}
 
 

@@ -27,13 +27,13 @@ user users[3];
 RFID rfid[10];
 
 Beep beep(buzzerpin);
-Adafruit_NFCShield_I2C nfc(IRQ, RESET, &beep);
 
 // GM865
 int onPin = 22;                      // pin to toggle the modem's on/off
 char PIN[1] = "";                // replace this with your PIN
 //Position position;                   // stores the GPS position
 LCD lcd(users);
+Adafruit_NFCShield_I2C nfc(IRQ, RESET, &beep, users, &lcd);
 GPRS modem(&Serial2, users,&myGPS, rfid, &lcd);   // modem is connected to Serial3
 char cmd;                            // command read from terminal
 static long TIME_DELAY1 = 60000;     //Time Delay for GPRS thread
@@ -44,6 +44,7 @@ void setup(void) {
   users[0].scheduled_pick_time = 2230;
   users[0].scheduled_drop_time = 2240;
   users[0].entry_num = "2010CS50293";
+  users[0].rfid_tag = 1004;
   Serial.begin(115200);
   beep.begin();
   nfc.begin(); // Setup NFC - PN532
@@ -55,17 +56,11 @@ void setup(void) {
 #define LOOP_THRESHOLD_RFID 2
 
 void loop(void) {
-  long time = millis();
-  beep.execute();
-  nfc.perform();
-  time = millis() - time;
-  if(time > LOOP_THRESHOLD_RFID)
+  if(modem.run())
   {
-    Serial.print(" LOOP TIME [NFC] : ");
-    Serial.println(time);
-    delay(100);
+    beep.execute();
+    nfc.perform();
+    myGPS.gpsloop();
+    lcd.display(3);
   }
-  myGPS.gpsloop();
-  modem.run();
-  //lcd.display(3);
 }
