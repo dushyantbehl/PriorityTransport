@@ -20,7 +20,7 @@
 #define OFF false
 #define N_GPS 60
 #define N_RFID 10
-#define setuptimeout 4000
+#define setuptimeout 8000
 #define sendtimeout 40000
 #define cycletimeout 60000
 #define sendcount 3

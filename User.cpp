@@ -1,4 +1,5 @@
 #include "User.h"
+#include "Arduino.h"
 #include <string>
 using namespace std;
 
@@ -65,7 +66,7 @@ void user::parse(String SingleUserString)
   pos = str.indexOf("}");
  // temp = str.substring(0,pos);
  // temp.toCharArray(chr,temp.length()+1);
-  rfid_tag = str.substring(0,pos+1);
+  rfid_tag = str.substring(0,pos);
 }
   user_status = -1;
 }

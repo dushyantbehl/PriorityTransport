@@ -284,7 +284,7 @@ void GPRS::long_parse(String FullString)
   {
      pos1 = temp.indexOf("{"); 
      pos2 = temp.indexOf("}");
-     str = temp.substring(pos1+1,pos2-1);
+     str = temp.substring(pos1+1,pos2);
      userdata[count++].parse(str);
      temp = temp.substring(pos2+1);
   }
