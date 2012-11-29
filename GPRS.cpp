@@ -52,8 +52,8 @@ boolean	GPRS::checktimeout(long timeout1)
 	{
 //                if(ATindex ==1 && (millis() - timestart) <= timeout1)
 //                Serial.println("Still no time out");
-//                else if(ATindex==1)
-//                Serial.println("TIMEOUT!!");
+                if((millis() - timestart) > timeout1)
+                  Serial.println("TIMEOUT!!");
                 return (millis() - timestart) <= timeout1;
 	}
 	
@@ -355,6 +355,7 @@ void	GPRS::send()
 		if(waiting==OFF)
 		{
 			//char buf[BUF_LENGTH];
+                        timestart = millis();
                         if(ATindex<2)
 			requestModem(ATsendcommand[ATindex], 1000); 
                         else if(ATindex== 2)
@@ -395,7 +396,7 @@ void	GPRS::send()
                             //   Serial.print("k = ");
                             //   Serial.println(k);
                                myPosition *temp = gpsdata->positions(k);
-                               temp_string = "&latitude"+String(k, DEC)+"="+String((long)(temp->lat), DEC)+"&longitude"+String(k, DEC)+"="+String((long)(temp->lon), DEC)+"&date"+String(k, DEC)+"="+String((long)(temp->date), DEC)+"&gpstime"+String(k, DEC)+"="+String((long)(temp->time), DEC) + "&busid"+String(k, DEC)+"=2";
+                               temp_string = "&latitude"+String(k, DEC)+"="+String((long)(temp->lat), DEC)+"&longitude"+String(k, DEC)+"="+String((long)(temp->lon), DEC)+"&date"+String(k, DEC)+"="+String((long)(temp->date), DEC)+"&gpstime"+String(k, DEC)+"="+String((long)(temp->time), DEC) + "&busid"+String(k, DEC)+"=1";
                                 temp_length += temp_string.length();
                              }
 
@@ -460,6 +461,7 @@ void	GPRS::send()
                                 {
                                 	waiting = OFF;
                                     ATindex++;
+                                    count = 0;
                                 }
 				else if(variable==0 || variable == 6)
 				{
@@ -470,11 +472,18 @@ void	GPRS::send()
 					}
 					else
                                         {
+                                              if(ATindex==1)
+                                              {
+                                                ATindex++;
+                                                waiting = OFF;
+                                              } 
+                                              else
 						reset();
                                         }
 				}
                                 else if(variable==1)
                                 {
+                                  count =0;
                                   if(ATindex<sendcount-1)
 					ATindex++;
                                   else{
@@ -483,7 +492,6 @@ void	GPRS::send()
                                   }
                                   waiting = OFF;
                                 }
-                                  
 			}
 			if(!checktimeout(timeout))
 			{

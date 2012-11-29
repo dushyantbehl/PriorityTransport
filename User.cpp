@@ -4,14 +4,14 @@ using namespace std;
 
 user::user()
 {
-  scheduled_pick_time = 0;
+  scheduled_pick_time = "";
   scheduled_drop_time =0;
   actual_pick_time = 0;
   actual_drop_time = 0;
   pick_location = "";
   drop_location = "";
   entry_num = "";
-  rfid_tag = 0;
+  rfid_tag = "";
   user_status = -1;
   rfidsend = false;
 }
@@ -27,39 +27,46 @@ void user::parse(String SingleUserString)
   String str = SingleUserString;
   String temp;
   char chr[str.length()+1];
+  if(str.indexOf("pt")!=-1){
   pos = str.indexOf("=");  
-  str = str.substring(pos+3);
+  str = str.substring(pos+1);
   pos = str.indexOf(",");
-  temp = str.substring(0,pos);
-  temp.toCharArray(chr,temp.length()+1);
-  scheduled_pick_time = atol(chr);
+  //temp = str.substring(0,pos-1);
+  //temp.toCharArray(chr,temp.length()+1);
+  scheduled_pick_time = str.substring(0,pos);
+ }
+ if(str.indexOf("pl")!=-1){
   pos = str.indexOf("=");  
-  str = str.substring(pos+3);
-  pos = str.indexOf(",");
-  temp = str.substring(0,pos);
-  temp.toCharArray(chr,temp.length()+1);
-  scheduled_drop_time = atol(chr);
-  pos = str.indexOf("=");  
-  str = str.substring(pos+3);
+  str = str.substring(pos+2);
   pos = str.indexOf(",");
   //temp = str.substring(0,pos)
-  pick_location = str.substring(0,pos);
+  pick_location = str.substring(0,pos-1);
+ }
+ if(str.indexOf("dl")!=-1){
   pos = str.indexOf("=");  
-  str = str.substring(pos+3);
+  str = str.substring(pos+2);
   pos = str.indexOf(",");
   //temp = str.substring(0,pos)
-  drop_location = str.substring(0,pos);
+  drop_location = str.substring(0,pos-1);
+ }
+ if(str.indexOf("en")!=-1){
   pos = str.indexOf("=");  
-  str = str.substring(pos+3);
+  str = str.substring(pos+2);
   pos = str.indexOf(",");
   //temp = str.substring(0,pos)
-  entry_num = str.substring(0,pos);
+  if(pos-1>=7)
+  entry_num = str.substring(0,7);
+  else 
+  entry_num = str.substring(0,pos-1);
+ }
+ if(str.indexOf("rt")!=-1){
   pos = str.indexOf("=");  
-  str = str.substring(pos+3);
-  pos = str.indexOf(",");
-  temp = str.substring(0,pos);
-  temp.toCharArray(chr,temp.length()+1);
-  rfid_tag = atoi(chr);
+  str = str.substring(pos+1);
+  pos = str.indexOf("}");
+ // temp = str.substring(0,pos);
+ // temp.toCharArray(chr,temp.length()+1);
+  rfid_tag = str.substring(0,pos+1);
+}
   user_status = -1;
 }
 

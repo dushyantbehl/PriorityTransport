@@ -183,7 +183,7 @@ void Adafruit_NFCShield_I2C::perform()
           break;
         }
   
-        if(users[i].rfid_tag == uidval)
+        if(users[i].rfid_tag == String(uidval,DEC))
         {
           Serial.println("FOUND PRIORITY CUSTOMER");
           users[i].rfidsend = true;

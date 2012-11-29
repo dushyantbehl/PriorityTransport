@@ -39,12 +39,6 @@ char cmd;                            // command read from terminal
 static long TIME_DELAY1 = 60000;     //Time Delay for GPRS thread
 
 void setup(void) {
-  users[0].pick_location = "SATPU";
-  users[0].drop_location = "HIMAD";
-  users[0].scheduled_pick_time = 2230;
-  users[0].scheduled_drop_time = 2240;
-  users[0].entry_num = "2010CS50293";
-  users[0].rfid_tag = 1004;
   Serial.begin(115200);
   beep.begin();
   nfc.begin(); // Setup NFC - PN532
@@ -56,11 +50,9 @@ void setup(void) {
 #define LOOP_THRESHOLD_RFID 2
 
 void loop(void) {
-  if(modem.run())
-  {
+  modem.run();
     beep.execute();
     nfc.perform();
     myGPS.gpsloop();
     lcd.display(3);
-  }
 }

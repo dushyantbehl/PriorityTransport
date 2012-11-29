@@ -14,11 +14,13 @@ int LCD::lcd_pin(int lcd_no)
 {
 switch(lcd_no)
 	{
-//	case 5:
-//	return(2);
-//	break;
+
+	case 0:
+	//return(39);
+	return(50);
+	break;
 	
-	case 1:
+      case 1:
 	//return(22);
 	return(34);
 	break;
@@ -28,16 +30,11 @@ switch(lcd_no)
 	return(51);
 	break;
 	
-	case 3:
-	//return(23);
-	return(37);
-	break;
-	
-	case 0:
-	//return(39);
-	return(50);
-	break;
-			
+//	case 3:
+//	//return(23);
+//	return(37);
+//	break;
+//				
 	}
 }
 
@@ -56,49 +53,16 @@ void LCD::display(int no_of_lcd)
   int print_index=0;
   while(index<no_of_lcd)
     {
-      Serial.print("[AKANKSHA] ");
-      Serial.println(user_aka[index].user_status);
+     // Serial.print("[AKANKSHA] ");
+     // Serial.println(user_aka[index].user_status);
             if(user_aka[index].user_status < 1)
-              displayuserdata_2to5(user_aka[index].entry_num, user_aka[index].scheduled_pick_time, user_aka[index].scheduled_drop_time, user_aka[index].pick_location, user_aka[index].drop_location,print_index++);
+              displayuserdata(user_aka[index].entry_num, user_aka[index].scheduled_pick_time, user_aka[index].rfid_tag, user_aka[index].pick_location, user_aka[index].drop_location,print_index++,user_aka[index].user_status);
       	  index++;
     }
           redisplay = false;
   }
 }
 
-//void LCD::displayuserdata_1(String id, int picktime , int droptime , String pickstop , String dropstop) // displays the 
-//{
-//
-//LiquidCrystal lcd(9,8,7,6,5,4,3);
-//
-// lcd.begin(16,2);              // columns, rows.  use 16,2 for a 16x2 LCD, etc.
-//  lcd.clear();
-//
-// lcd.setCursor(0,0);          
-//  lcd.print(id);    
-//    delay(200);
-//	
-//lcd.setCursor(12,0);           
-//  lcd.print(pickstop);    
-//    delay(200);
-//	
-///* 	lcd.setCursor(8,0);          
-//  lcd.print(droptime);    
-//    delay(200); */
-//	
-//  lcd.setCursor(0,1);          
-//  lcd.print(picktime);
-//     delay(200);
-//
-// lcd.setCursor(6,1);           
-//  lcd.print(dropstop);    
-//    delay(200);
-//	
-//	lcd.setCursor(11,1);          
-//  lcd.print(droptime);    
-//    delay(200);
-//  
-//}
 
 String adjusted_time(long time)
 {
@@ -106,7 +70,10 @@ if(time<1000)
   {
     if(time<100)
       {
-      return("00"+String(time,DEC));
+        if(time<10)
+        return("000"+String(time,DEC));
+        else
+        return("00"+String(time,DEC));
       }
     else
       {
@@ -117,16 +84,16 @@ if(time<1000)
   return(String(time,DEC));
 }
 
-void LCD::displayuserdata_2to5(String id, int picktime , int droptime , String pickstop , String dropstop, int lcd_no) // displays the 
+void LCD::displayuserdata(String id, String picktime , String rfid , String pickstop , String dropstop, int lcd_no, int userstatus) // displays the 
 {
   int pin = lcd_pin(lcd_no);  
   
-  String _ptime , _dtime ;
+//  String _ptime , _dtime ;
   String _pstop , _dstop;
   
   
-  _ptime = adjusted_time(picktime);
-    _dtime = adjusted_time(droptime);
+  //_ptime = adjusted_time(picktime);
+    //_dtime = adjusted_time(droptime);
   
 LiquidCrystal lcd(pin,pin-2,pin-4,pin-6,pin-8,pin-10,pin-12);
 
@@ -136,25 +103,29 @@ LiquidCrystal lcd(pin,pin-2,pin-4,pin-6,pin-8,pin-10,pin-12);
  lcd.setCursor(0,0);          
   lcd.print(id);    
    // delay(200);
+   
+	if(userstatus == 0){
+ 	lcd.setCursor(8,0);          
+  lcd.print("->");    }
+    //delay(200); 
 	
-lcd.setCursor(12,0);           
+lcd.setCursor(11,0);           
   lcd.print(pickstop);    
    // delay(200);
-	
-/* 	lcd.setCursor(8,0);          
-  lcd.print(droptime);    
-    delay(200); */
+      
 	
   lcd.setCursor(0,1);          
-  lcd.print(_ptime);
+  lcd.print(picktime);
     // delay(200);
 
- lcd.setCursor(5,1);           
-  lcd.print(_dtime);    
+ lcd.setCursor(6,1);           
+  lcd.print(rfid);  
     //delay(200);
 	
-	lcd.setCursor(12,1);          
-  lcd.print(dropstop);    
+	lcd.setCursor(11,1);          
+//  lcd.print(dropstop);    
+    lcd.print(dropstop);    
+
     //delay(200);
 
 }

@@ -22,7 +22,7 @@ class LCD
   private:
   boolean redisplay;
     //int _pin;
-  void displayuserdata_2to5(String id, int picktime , int droptime , String pickstop , String dropstop, int lcd_no);
+  void displayuserdata(String id, String picktime , String rfid , String pickstop , String dropstop, int lcd_no, int user_status);
  // void displayuserdata_1(String id, int picktime , int droptime , String pickstop , String dropstop);
 	int lcd_pin(int lcd_no);
 	user *user_aka;
